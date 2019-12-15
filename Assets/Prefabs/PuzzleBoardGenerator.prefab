@@ -1,0 +1,118 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2624367903752498864
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2624367903752498862}
+  - component: {fileID: 2624367903752498865}
+  - component: {fileID: 2624367903752498863}
+  m_Layer: 0
+  m_Name: PuzzleBoardGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2624367903752498862
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2624367903752498864}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2624367903752498865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2624367903752498864}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25140a22c03134bbf8def29dcc879285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ImageFileDiskLocation: file:///Users/luca/Documents/monster mash.jpg
+  PuzzlePiecePrefab: {fileID: 6393982762617890535, guid: bcbd832b122d04109a72ef88645f5bc5,
+    type: 3}
+  GridWidth: 5
+  GridHeight: 5
+--- !u!114 &2624367903752498863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2624367903752498864}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: beb4a02cdedd349ce97ab8e4d27f80c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MeshLookup:
+  - ShapeEnum: 0
+    PuzzleMesh: {fileID: 2822608419863554258, guid: 27e375c0b37af4bb298a28274011915f,
+      type: 3}
+  - ShapeEnum: 1
+    PuzzleMesh: {fileID: -193742020269532364, guid: 2ed81137542fb48068707dcbe662c56d,
+      type: 3}
+  - ShapeEnum: 2
+    PuzzleMesh: {fileID: -5779196393028766313, guid: cf6ddc7403eaf4ad39ffe3d6cd78e5a1,
+      type: 3}
+  - ShapeEnum: 3
+    PuzzleMesh: {fileID: -1858271160603747306, guid: 104c19ca019094b7aa8e3705cbd6c36f,
+      type: 3}
+  - ShapeEnum: 4
+    PuzzleMesh: {fileID: 6178525799223960775, guid: ead9fb6c52af644e895c95b7ff273458,
+      type: 3}
+  - ShapeEnum: 5
+    PuzzleMesh: {fileID: 7961014995169804839, guid: 9a3e4ae5931d14324baa6b7a74f51722,
+      type: 3}
+  - ShapeEnum: 6
+    PuzzleMesh: {fileID: 1246500654926768520, guid: 4b1cd5c8a1b99438d9261bd63634548a,
+      type: 3}
+  - ShapeEnum: 7
+    PuzzleMesh: {fileID: 4289060424706002603, guid: ad831b3f6968549e6ba0e68bf692eda6,
+      type: 3}
+  - ShapeEnum: 8
+    PuzzleMesh: {fileID: -670671696840459232, guid: 920b8d51b61354176a55b6903175d22a,
+      type: 3}
+  - ShapeEnum: 9
+    PuzzleMesh: {fileID: 3927748603057761726, guid: 12cff69064b124fb0ad75d17277e1634,
+      type: 3}
+  - ShapeEnum: 10
+    PuzzleMesh: {fileID: -1113325238754026309, guid: b6706ad8ac19948cea09945078618e5f,
+      type: 3}
+  - ShapeEnum: 11
+    PuzzleMesh: {fileID: 1647647434040857475, guid: 380011e17339d480197a850895341682,
+      type: 3}
+  - ShapeEnum: 12
+    PuzzleMesh: {fileID: -8617494303658005653, guid: 88d49062bf33f4f89869c6970cf91701,
+      type: 3}
+  - ShapeEnum: 13
+    PuzzleMesh: {fileID: 3218207100845086464, guid: 484e5c4adcbe64c9085ee6a7f1229b5a,
+      type: 3}
+  - ShapeEnum: 14
+    PuzzleMesh: {fileID: 7169516662859336190, guid: 248fdd77d23144292bb4fb14baccafed,
+      type: 3}
+  - ShapeEnum: 15
+    PuzzleMesh: {fileID: -597381371599801271, guid: 6e0cd32fd05c945b49f2fba3b3c9fe39,
+      type: 3}
+  - ShapeEnum: 16
+    PuzzleMesh: {fileID: -662302768703289352, guid: ce8154742aed04e4c9995fc1c9dcc734,
+      type: 3}
+  - ShapeEnum: 17
+    PuzzleMesh: {fileID: -3774632745446055002, guid: 71a5d8f2f6c4443c1963e1e98baf8fae,
+      type: 3}
