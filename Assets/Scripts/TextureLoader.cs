@@ -23,7 +23,7 @@ public class TextureLoader : MonoBehaviour
 
             if (uwr.isNetworkError || uwr.isHttpError)
             {
-                Debug.Log(uwr.error);
+                Debug.Log("AsyncLoadTexture error: " + uwr.error);
             }
             else
             {

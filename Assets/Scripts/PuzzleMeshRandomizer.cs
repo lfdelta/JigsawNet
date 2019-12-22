@@ -17,7 +17,7 @@ public class PuzzleMeshRandomizer : MonoBehaviour
     private uint Height;
 
 
-    void Start()
+    void SortMeshLookups()
     {
         if (MeshLookup.Length != (uint)PuzzleShape.MAX_VAL)
         {
@@ -62,6 +62,8 @@ public class PuzzleMeshRandomizer : MonoBehaviour
     // Generates a randomized pattern of puzzle cuts (e.g. which pieces stick out and which ones have gaps)
     public void InitializeRandomizer(int RandomSeed, uint GridWidth, uint GridHeight)
     {
+        SortMeshLookups();
+        
         // Don't interrupt any other random behaviors occurring before/after this execution
         Random.State oldRandState = Random.state;
 
@@ -120,6 +122,8 @@ public class PuzzleMeshRandomizer : MonoBehaviour
             shapeEnum = GetFillerShape(X, Y, ref rotationCW);
         }
 
+        Debug.Log("ShapeEnum " + shapeEnum.ToString() + " (" + ((uint)shapeEnum).ToString() + ")");
+        Debug.Log("    has PuzzleMesh " + SortedMeshLookup[(uint)shapeEnum].PuzzleMesh.ToString());
         Piece.SetMesh(SortedMeshLookup[(uint)shapeEnum].PuzzleMesh, rotationCW);
     }
 

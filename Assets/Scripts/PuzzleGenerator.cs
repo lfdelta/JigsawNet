@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 [RequireComponent(typeof(PuzzleMeshRandomizer))]
 public class PuzzleGenerator : MonoBehaviour
@@ -10,23 +11,28 @@ public class PuzzleGenerator : MonoBehaviour
     public uint GridWidth = 1;
     public uint GridHeight = 1;
 
-    private TextureLoader Loader;
+    // TODO: serialize the texture to clients and have them read the texture value
+    //      Use a ReliableSequence channel (https://docs.unity3d.com/ScriptReference/Networking.QosType.html)
+    //      Try NetworkServer.Send and NetworkClient.Send (https://forum.unity.com/threads/send-png-from-server-to-client-and-via-versa.348323/)
+    //      https://docs.unity3d.com/2018.1/Documentation/ScriptReference/Networking.NetworkServer.html
+
+    // https://docs.unity3d.com/ScriptReference/Texture2D.GetRawTextureData.html
+    // https://docs.unity3d.com/ScriptReference/Texture2D.LoadRawTextureData.html
+
     private PuzzleMeshRandomizer PuzzleRandomizer;
 
 
     void Start()
     {
-        Loader = (TextureLoader)gameObject.AddComponent(typeof(TextureLoader));
-        Loader.OnTextureLoaded += HandleOnTextureLoaded;
-        Loader.RequestTexture(ImageFileDiskLocation);
-
         PuzzleRandomizer = GetComponent<PuzzleMeshRandomizer>();
+        HandleOnTextureLoaded(StaticJigsawData.PuzzleTexture);
+
+        Debug.Log(MsgType.Highest);
     }
 
 
     void HandleOnTextureLoaded(Texture2D PuzzleTexture)
     {
-        Loader.OnTextureLoaded -= HandleOnTextureLoaded;
         PuzzlePiece[] pieceArr = new PuzzlePiece[GridWidth * GridHeight];
 
         // TODO: choose a different random seed
@@ -65,6 +71,10 @@ public class PuzzleGenerator : MonoBehaviour
         }
 
         AlignPiecesNeatly(Vector3.zero, pieceArr);
+        foreach (PuzzlePiece piece in pieceArr)
+        {
+            NetworkServer.Spawn(piece.gameObject);
+        }
     }
 
 
