@@ -26,8 +26,6 @@ public class PuzzleGenerator : MonoBehaviour
     {
         PuzzleRandomizer = GetComponent<PuzzleMeshRandomizer>();
         HandleOnTextureLoaded(StaticJigsawData.PuzzleTexture);
-
-        Debug.Log(MsgType.Highest);
     }
 
 

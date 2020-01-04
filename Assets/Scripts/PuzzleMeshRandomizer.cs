@@ -122,8 +122,6 @@ public class PuzzleMeshRandomizer : MonoBehaviour
             shapeEnum = GetFillerShape(X, Y, ref rotationCW);
         }
 
-        Debug.Log("ShapeEnum " + shapeEnum.ToString() + " (" + ((uint)shapeEnum).ToString() + ")");
-        Debug.Log("    has PuzzleMesh " + SortedMeshLookup[(uint)shapeEnum].PuzzleMesh.ToString());
         Piece.SetMesh(SortedMeshLookup[(uint)shapeEnum].PuzzleMesh, rotationCW);
     }
 
