@@ -9,12 +9,18 @@ public class PuzzleMeshRandomizer : MonoBehaviour
 {
     public PuzzleMapping[] MeshLookup;
 
-    private PuzzleMapping[] SortedMeshLookup;
+    private static PuzzleMapping[] SortedMeshLookup;
     private bool[,] HorizontalPolarities; // True if pointing rightward
     private bool[,] VerticalPolarities;   // True if pointing downward
     private bool Initialized = false;
     private uint Width;
     private uint Height;
+
+
+    public static Mesh GetPuzzleMesh(PuzzleShape Shape)
+    {
+        return SortedMeshLookup[(uint)Shape].PuzzleMesh;
+    }
 
 
     void SortMeshLookups()
@@ -59,11 +65,15 @@ public class PuzzleMeshRandomizer : MonoBehaviour
     }
 
 
+    void Awake()
+    {
+        SortMeshLookups();
+    }
+
+
     // Generates a randomized pattern of puzzle cuts (e.g. which pieces stick out and which ones have gaps)
     public void InitializeRandomizer(int RandomSeed, uint GridWidth, uint GridHeight)
     {
-        SortMeshLookups();
-        
         // Don't interrupt any other random behaviors occurring before/after this execution
         Random.State oldRandState = Random.state;
 
@@ -122,7 +132,7 @@ public class PuzzleMeshRandomizer : MonoBehaviour
             shapeEnum = GetFillerShape(X, Y, ref rotationCW);
         }
 
-        Piece.SetMesh(SortedMeshLookup[(uint)shapeEnum].PuzzleMesh, rotationCW);
+        Piece.SetMesh(shapeEnum, rotationCW);
     }
 
 

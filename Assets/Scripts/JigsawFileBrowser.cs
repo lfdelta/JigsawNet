@@ -3,8 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using GracesGames.SimpleFileBrowser.Scripts;
 
-public class JigsawFileBrowser : MonoBehaviour {
-
+public class JigsawFileBrowser : MonoBehaviour
+{
     public GameObject FileBrowserPrefab;
     public string[] FileExtensions;
     public Text OutputField;

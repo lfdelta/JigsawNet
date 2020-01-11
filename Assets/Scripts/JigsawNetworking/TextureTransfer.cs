@@ -201,7 +201,7 @@ public class TextureTransfer : MonoBehaviour
             StaticJigsawData.PuzzleTexture.Apply();
             ClientTextureBuffers.Remove(TextureId);
 
-            // TODO: send a signal to apply PuzzleTexture to the pieces
+            HandlePuzzleTextureLoaded();
         }
         else
         {
@@ -210,12 +210,22 @@ public class TextureTransfer : MonoBehaviour
     }
 
 
-    // TEMP / Debug
-    void OnGUI()
+    private void HandlePuzzleTextureLoaded()
     {
-        if (StaticJigsawData.PuzzleTexture)
+        PuzzlePiece[] pieces = (PuzzlePiece[])FindObjectsOfType(typeof(PuzzlePiece));
+        foreach (PuzzlePiece p in pieces)
         {
-            GUI.DrawTexture(Camera.current.pixelRect, StaticJigsawData.PuzzleTexture);
+            p.ClientSetPuzzleTexture(StaticJigsawData.PuzzleTexture);
         }
     }
+
+
+    // TEMP / Debug
+//    void OnGUI()
+//    {
+//        if (StaticJigsawData.PuzzleTexture)
+//        {
+//            GUI.DrawTexture(Camera.current.pixelRect, StaticJigsawData.PuzzleTexture);
+//        }
+//    }
 }
