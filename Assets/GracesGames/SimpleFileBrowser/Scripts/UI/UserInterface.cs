@@ -242,7 +242,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts.UI {
 
 		// Disables file buttons with files that have a different file extension (than given to the OpenFilePanel)
 		private void DisableWrongExtensionFiles(GameObject button, string file) {
-			if (!_fileBrowser.CompatibleFileExtension(file)) {
+            if (!_fileBrowser.CompatibleFileExtension(file) || !_fileBrowser.CompatibleFileSize(file)) {
 				button.GetComponent<Button>().interactable = false;
 			}
 		}

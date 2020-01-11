@@ -13,11 +13,14 @@ public class JigsawNetworkManager : NetworkManager
     public override void OnServerConnect(NetworkConnection conn)
     {
         Debug.Log("A client connected to the server: " + conn);
-        if (!texTransfer)
+        if (conn.hostId != -1)
         {
-            texTransfer = (TextureTransfer)gameObject.AddComponent(typeof(TextureTransfer));
+            if (!texTransfer)
+            {
+                texTransfer = (TextureTransfer)gameObject.AddComponent(typeof(TextureTransfer));
+            }
+            texTransfer.SendTextureToClient(conn.connectionId, 0, StaticJigsawData.PuzzleTexture);
         }
-        texTransfer.SendTextureToClient(conn.connectionId, 0, StaticJigsawData.PuzzleTexture);
     }
 
 

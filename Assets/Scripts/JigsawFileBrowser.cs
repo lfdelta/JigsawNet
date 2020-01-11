@@ -7,6 +7,7 @@ public class JigsawFileBrowser : MonoBehaviour
 {
     public GameObject FileBrowserPrefab;
     public string[] FileExtensions;
+    public int MaxFileSize = -1;
     public Text OutputField;
     public RawImage OutputImage;
 
@@ -37,7 +38,7 @@ public class JigsawFileBrowser : MonoBehaviour
         fileBrowserScript.SetupFileBrowser(ViewMode.Landscape);
 
         // Subscribe to OnFileSelect event (call LoadFileUsingPath using path) 
-        fileBrowserScript.OpenFilePanel(FileExtensions);
+        fileBrowserScript.OpenFilePanel(FileExtensions, MaxFileSize);
         fileBrowserScript.OnFileSelect += LoadFileUsingPath;
     }
 
@@ -61,7 +62,13 @@ public class JigsawFileBrowser : MonoBehaviour
     private void HandleOnTextureLoaded(Texture2D LoadedTexture)
     {
         OutputImage.texture = LoadedTexture;
-        StaticJigsawData.PuzzleTexture = LoadedTexture;
         Loader.OnTextureLoaded -= HandleOnTextureLoaded;
+
+        // Preprocess the texture to reduce size
+        Debug.Log("Initial texture size is " + LoadedTexture.GetRawTextureData().Length.ToString() + " with format " + LoadedTexture.graphicsFormat.ToString());
+        LoadedTexture.Compress(true);
+        Debug.Log("Compressed texture size is " + LoadedTexture.GetRawTextureData().Length.ToString() + " with format " + LoadedTexture.graphicsFormat.ToString());
+
+        StaticJigsawData.PuzzleTexture = LoadedTexture;
     }
 }

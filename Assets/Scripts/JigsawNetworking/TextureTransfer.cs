@@ -6,7 +6,7 @@ using UnityEngine.Networking.NetworkSystem;
 
 public class TextureTransfer : MonoBehaviour
 {
-    const int ChunkSize = 2048;
+    const int ChunkSize = 4000;
 
     private class TextureMetadata
     {
@@ -43,7 +43,6 @@ public class TextureTransfer : MonoBehaviour
     };
 
 
-    // Create a client and connect to the server port
     public void SetupClient(NetworkClient Client)
     {
         ClientTextureBuffers = new Dictionary<short, TextureMetadata>();
@@ -56,8 +55,7 @@ public class TextureTransfer : MonoBehaviour
     public void SendTextureToClient(int ConnectionId, short TextureId, Texture2D Texture)
     {
         // Spread messages out to keep from overflowing the send/receive buffer
-        // TODO: use a basic ACK system to detect and restart dropped data streams
-        // TODO: preprocess the texture as needed to optimize the data stream, e.g. remove mips
+        // TODO: if necessary, use a basic ACK system to detect and restart dropped data streams
         StartCoroutine(SendTextureToClient_Internal(ConnectionId, TextureId, Texture));
     }
 
@@ -166,7 +164,7 @@ public class TextureTransfer : MonoBehaviour
             texData.RawBytes[chunkMsg.StartByte + i] = chunkMsg.Bytes[i];
         }
         texData.ReceivedChunks[chunkMsg.StartByte / texData.ChunkSz] = true;
-        Debug.Log("Client received chunk " + (chunkMsg.StartByte / texData.ChunkSz).ToString() + "/" + (texData.ReceivedChunks.Length).ToString() + " for texture " + chunkMsg.TextureId.ToString());
+        Debug.Log("Client received chunk " + (chunkMsg.StartByte / texData.ChunkSz + 1).ToString() + "/" + (texData.ReceivedChunks.Length).ToString() + " for texture " + chunkMsg.TextureId.ToString());
         ClientCheckTextureIsComplete(chunkMsg.TextureId);
     }
 

@@ -76,6 +76,9 @@ namespace GracesGames.SimpleFileBrowser.Scripts {
 		// String array file extensions to filter results and save new files
 		private string[] _fileExtensions;
 
+        // Maximum supported file size, in bytes
+        private int _maxFileSize = -1;
+
 		// Unity Action Event for closing the file browser
 		public event Action OnFileBrowserClose = delegate { };
 
@@ -368,6 +371,21 @@ namespace GracesGames.SimpleFileBrowser.Scripts {
 			return false;
 		}
 
+        public bool CompatibleFileSize(string file) {
+            if (_maxFileSize < 0)
+            {
+                return true;
+            }
+            System.IO.FileInfo fileInfo = new System.IO.FileInfo(file);
+            if (!fileInfo.Exists)
+            {
+                Debug.Log("Failed to find FileInfo for " + file);
+                return false;
+            }
+            Debug.Log("File at " + file + " has size " + fileInfo.Length.ToString());
+            return (fileInfo.Length <= _maxFileSize);
+        }
+
 		// When a directory is clicked, update the path and the file browser
 		public void DirectoryClick(string path) {
 			_backwardStack.Push(_currentPath.Clone() as string);
@@ -392,7 +410,7 @@ namespace GracesGames.SimpleFileBrowser.Scripts {
 
 		// Opens a file browser in save mode
 		// Requires a default file and an array of file extensions
-		public void SaveFilePanel(string defaultName, string[] fileExtensions) {
+		public void SaveFilePanel(string defaultName, string[] fileExtensions, int maxFileSize = -1) {
 			// Make sure the file extension is not invalid, else set it to "" (no extension for the file to save)
 			if (fileExtensions == null || fileExtensions.Length == 0) {
 				fileExtensions = new string[1];
@@ -401,12 +419,12 @@ namespace GracesGames.SimpleFileBrowser.Scripts {
 
 			_mode = FileBrowserMode.Save;
 			_uiScript.SetSaveMode(defaultName, fileExtensions[0]);
-			FilePanel(fileExtensions);
+            FilePanel(fileExtensions, maxFileSize);
 		}
 
 		// Opens a file browser in load mode
 		// Requires a file extension used to filter the loadable files
-		public void OpenFilePanel(string[] fileExtensions) {
+        public void OpenFilePanel(string[] fileExtensions, int maxFileSize = -1) {
 			// Make sure the file extensions are not invalid, else set it to an empty array (no filter for load)
 			if (fileExtensions == null || fileExtensions.Length == 0) {
 				fileExtensions = new string[0];
@@ -414,15 +432,16 @@ namespace GracesGames.SimpleFileBrowser.Scripts {
 
 			_mode = FileBrowserMode.Load;
 			_uiScript.SetLoadMode();
-			FilePanel(fileExtensions);
+			FilePanel(fileExtensions, maxFileSize);
 		}
 
 		// Generic file browser panel to remove duplicate code
-		private void FilePanel(string[] fileExtensions) {
+		private void FilePanel(string[] fileExtensions, int maxFileSize) {
 			// Set _isOpen
 			_isOpen = true;
 			// Set values
 			_fileExtensions = fileExtensions;
+            _maxFileSize = maxFileSize;
 			// Call update once to set all files for initial directory
 			UpdateFileBrowser();
 		}
