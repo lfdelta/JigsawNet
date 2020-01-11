@@ -137,9 +137,6 @@ public class JigsawNetworkManager : NetworkManager
         texTransfer = (TextureTransfer)gameObject.AddComponent(typeof(TextureTransfer));
 
         texTransfer.SetupClient(client);
-        //Debug.Log(MsgType.Highest);
-        //client.RegisterHandler(JigsawNetworkMsg.TextureMeta, OnClientTextureMeta);
-        //client.RegisterHandler(JigsawNetworkMsg.TextureChunk, OnClientTextureChunk);
         Debug.Log("Client has started");
     }
 

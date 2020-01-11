@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-[RequireComponent(typeof(PuzzleMeshRandomizer))]
 public class PuzzleGenerator : MonoBehaviour
 {
     public string ImageFileDiskLocation;
@@ -11,20 +10,12 @@ public class PuzzleGenerator : MonoBehaviour
     public uint GridWidth = 1;
     public uint GridHeight = 1;
 
-    // TODO: serialize the texture to clients and have them read the texture value
-    //      Use a ReliableSequence channel (https://docs.unity3d.com/ScriptReference/Networking.QosType.html)
-    //      Try NetworkServer.Send and NetworkClient.Send (https://forum.unity.com/threads/send-png-from-server-to-client-and-via-versa.348323/)
-    //      https://docs.unity3d.com/2018.1/Documentation/ScriptReference/Networking.NetworkServer.html
-
-    // https://docs.unity3d.com/ScriptReference/Texture2D.GetRawTextureData.html
-    // https://docs.unity3d.com/ScriptReference/Texture2D.LoadRawTextureData.html
-
     private PuzzleMeshRandomizer PuzzleRandomizer;
 
 
     void Start()
     {
-        PuzzleRandomizer = GetComponent<PuzzleMeshRandomizer>();
+        PuzzleRandomizer = (PuzzleMeshRandomizer)FindObjectOfType(typeof(PuzzleMeshRandomizer));
         HandleOnTextureLoaded(StaticJigsawData.PuzzleTexture);
     }
 
@@ -33,7 +24,7 @@ public class PuzzleGenerator : MonoBehaviour
     {
         PuzzlePiece[] pieceArr = new PuzzlePiece[GridWidth * GridHeight];
 
-        // TODO: choose a different random seed
+        // TODO: choose a different random seed, possibly from user input
         PuzzleRandomizer.InitializeRandomizer(0, GridWidth, GridHeight);
 
         // Compute the scale and offset, cutting off edges from the texture as needed (rather than letterboxing)

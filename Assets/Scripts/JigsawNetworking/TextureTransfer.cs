@@ -4,9 +4,6 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.NetworkSystem;
 
-// TODO: separate out message send/receive logic from client connect logic
-// https://docs.unity3d.com/Manual/UNetMessages.html
-
 public class TextureTransfer : MonoBehaviour
 {
     const int ChunkSize = 2048;
@@ -218,14 +215,4 @@ public class TextureTransfer : MonoBehaviour
             p.ClientSetPuzzleTexture(StaticJigsawData.PuzzleTexture);
         }
     }
-
-
-    // TEMP / Debug
-//    void OnGUI()
-//    {
-//        if (StaticJigsawData.PuzzleTexture)
-//        {
-//            GUI.DrawTexture(Camera.current.pixelRect, StaticJigsawData.PuzzleTexture);
-//        }
-//    }
 }
