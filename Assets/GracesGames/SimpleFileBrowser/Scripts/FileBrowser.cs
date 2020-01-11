@@ -379,10 +379,8 @@ namespace GracesGames.SimpleFileBrowser.Scripts {
             System.IO.FileInfo fileInfo = new System.IO.FileInfo(file);
             if (!fileInfo.Exists)
             {
-                Debug.Log("Failed to find FileInfo for " + file);
                 return false;
             }
-            Debug.Log("File at " + file + " has size " + fileInfo.Length.ToString());
             return (fileInfo.Length <= _maxFileSize);
         }
 

@@ -5,6 +5,11 @@ using UnityEngine.Networking;
 
 public class PuzzlePiece : NetworkBehaviour
 {
+    public int PlayerControllerId = -1; // The owning player, only valid on the server
+
+    [SyncVar]
+    private int Id = -1; // Index into the server's PuzzleManager array
+    
     [SyncVar]
     private PuzzleMeshRandomizer.PuzzleShape ShapeEnum;
 
@@ -28,6 +33,22 @@ public class PuzzlePiece : NetworkBehaviour
         Rotation = CW_Rotation;
         InternalSetMesh(PuzzleMeshRandomizer.GetPuzzleMesh(Shape), CW_Rotation);
         transform.rotation = Quaternion.AngleAxis(CW_Rotation, Vector3.up) * transform.rotation;
+    }
+
+
+    public int GetId()
+    {
+        return Id;
+    }
+
+
+    public void SetId(int ID)
+    {
+        Id = ID;
+        if (Id < 0)
+        {
+            Debug.LogErrorFormat("PuzzlePiece assigned a negative Id %d", Id);
+        }
     }
 
 
@@ -59,6 +80,16 @@ public class PuzzlePiece : NetworkBehaviour
         MatOffsetX = OffsetX;
         MatOffsetY = OffsetY;
         InternalSetMaterialInfo(PuzzleTexture, Scale, OffsetX, OffsetY);
+    }
+
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        if (StaticJigsawData.PuzzleTexture)
+        {
+            ClientSetPuzzleTexture(StaticJigsawData.PuzzleTexture);
+        }
     }
 
 

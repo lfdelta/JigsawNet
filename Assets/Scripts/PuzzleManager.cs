@@ -3,26 +3,48 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class PuzzleGenerator : MonoBehaviour
+public class PuzzleManager : MonoBehaviour
 {
-    public string ImageFileDiskLocation;
     public GameObject PuzzlePiecePrefab;
-    public uint GridWidth = 1;
-    public uint GridHeight = 1;
+    public uint GridWidth = 2;
+    public uint GridHeight = 2;
 
     private PuzzleMeshRandomizer PuzzleRandomizer;
+    private PuzzlePiece[] Pieces;
+    private int LastAssignedPlayerId = -1;
 
 
     void Start()
     {
         PuzzleRandomizer = (PuzzleMeshRandomizer)FindObjectOfType(typeof(PuzzleMeshRandomizer));
-        HandleOnTextureLoaded(StaticJigsawData.PuzzleTexture);
+        GeneratePuzzlePieces(StaticJigsawData.PuzzleTexture);
     }
 
 
-    void HandleOnTextureLoaded(Texture2D PuzzleTexture)
+    public int GetNextPlayerId()
     {
-        PuzzlePiece[] pieceArr = new PuzzlePiece[GridWidth * GridHeight];
+        ++LastAssignedPlayerId;
+        return LastAssignedPlayerId;
+    }
+
+
+    public PuzzlePiece GetPiece(int Id)
+    {
+        if (Id < 0 || Id >= Pieces.Length)
+        {
+            return null;
+        }
+        return Pieces[Id];
+    }
+
+
+    void GeneratePuzzlePieces(Texture2D PuzzleTexture)
+    {
+        if (Pieces != null)
+        {
+            Debug.LogWarning("GeneratePuzzlePieces was called after Pieces array was already initialized");
+        }
+        Pieces = new PuzzlePiece[GridWidth * GridHeight];
 
         // TODO: choose a different random seed, possibly from user input
         PuzzleRandomizer.InitializeRandomizer(0, GridWidth, GridHeight);
@@ -49,18 +71,20 @@ public class PuzzleGenerator : MonoBehaviour
         {
             for (uint x = 0; x < GridWidth; ++x)
             {
+                int ind = (int)(y * GridWidth + x);
                 Quaternion spawnRot = new Quaternion();
                 spawnRot.eulerAngles = new Vector3(270, 0, 0);
 
                 PuzzlePiece piece = Instantiate(PuzzlePiecePrefab, Vector3.zero, spawnRot).GetComponent<PuzzlePiece>();
                 PuzzleRandomizer.SetupPiece(ref piece, x, y);
                 piece.SetMaterialInfo(PuzzleTexture, pieceScale, puzzleRoot.x + x * pieceScale, puzzleRoot.y + y * pieceScale);
-                pieceArr[y * GridWidth + x] = piece;
+                piece.SetId(ind);
+                Pieces[ind] = piece;
             }
         }
 
-        AlignPiecesNeatly(Vector3.zero, pieceArr);
-        foreach (PuzzlePiece piece in pieceArr)
+        AlignPiecesNeatly(Vector3.zero, Pieces);
+        foreach (PuzzlePiece piece in Pieces)
         {
             NetworkServer.Spawn(piece.gameObject);
         }
