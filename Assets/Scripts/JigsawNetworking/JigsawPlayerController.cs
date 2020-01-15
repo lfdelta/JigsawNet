@@ -13,6 +13,9 @@ public class JigsawPlayerController : NetworkBehaviour
 
     private PuzzleManager puzzleManager;
 
+    private Vector3 LastMousePosition;
+    private Vector3 LastMouseWorldPosition;
+
 
     public override void OnStartServer()
     {
@@ -40,6 +43,17 @@ public class JigsawPlayerController : NetworkBehaviour
 
 
     [Command]
+    void CmdDebugRotateAllPieces(float Yaw)
+    {
+        PuzzlePiece[] pieces = (PuzzlePiece[])FindObjectsOfType<PuzzlePiece>();
+        foreach(PuzzlePiece p in pieces)
+        {
+            RotatePiece(p, Yaw);
+        }
+    }
+
+
+    [Command]
     void CmdSelectPuzzlePiece(int Id)
     {
         if (SelectedPieceId >= 0)
@@ -52,8 +66,20 @@ public class JigsawPlayerController : NetworkBehaviour
             piece.PlayerControllerId = PlayerId;
             SelectedPieceId = Id;
 
-            // TODO: set piece height to above the rest
-            // TODO: reset pitch and roll; round yaw to nearest 90 degrees
+            // Round yaw to the nearest 90 degrees
+            float yaw = piece.transform.eulerAngles.y;
+            float finalYaw = Mathf.Round(yaw / 90.0f) * 90.0f;
+            if (yaw != finalYaw)
+            {
+                piece.transform.Rotate(Vector3.up, finalYaw - yaw, Space.World);
+            }
+
+            // Set the height appropriately
+            Vector3 pos = piece.transform.position;
+            pos.y = GlobalJigsawSettings.Get().PuzzlePieceSelectedHeight;
+            piece.transform.position = pos;
+
+            piece.GetComponent<Rigidbody>().useGravity = false;
         }
     }
 
@@ -70,6 +96,44 @@ public class JigsawPlayerController : NetworkBehaviour
         {
             piece.transform.position = piece.transform.position + new Vector3(WorldDeltaX, 0, WorldDeltaZ);
         }
+
+        // TODO: clamp position to defined game board boundary
+    }
+
+
+    void RotatePiece(PuzzlePiece Piece, float Angle)
+    {
+        Piece.transform.Rotate(Vector3.up, Angle, Space.World);
+    }
+
+
+    [Command]
+    void CmdRotateLeft()
+    {
+        if (SelectedPieceId < 0)
+        {
+            return;
+        }
+        PuzzlePiece piece = puzzleManager.GetPiece(SelectedPieceId);
+        if (piece != null && piece.PlayerControllerId == PlayerId)
+        {
+            RotatePiece(piece, -90.0f);
+        }
+    }
+
+
+    [Command]
+    void CmdRotateRight()
+    {
+        if (SelectedPieceId < 0)
+        {
+            return;
+        }
+        PuzzlePiece piece = puzzleManager.GetPiece(SelectedPieceId);
+        if (piece != null && piece.PlayerControllerId == PlayerId)
+        {
+            RotatePiece(piece, 90.0f);
+        }
     }
 
 
@@ -85,7 +149,13 @@ public class JigsawPlayerController : NetworkBehaviour
         {
             piece.PlayerControllerId = -1;
 
-            // TODO: return to initial height; snap to grid XZ
+            // Snap to XZ grid
+            Vector3 pos = piece.transform.position;
+            pos.x = Mathf.Round(pos.x);
+            pos.z = Mathf.Round(pos.z);
+            piece.transform.position = pos;
+
+            piece.GetComponent<Rigidbody>().useGravity = true;
         }
         SelectedPieceId = -1;
     }
@@ -99,14 +169,15 @@ public class JigsawPlayerController : NetworkBehaviour
         if (Input.GetButtonDown("Select"))
         {
             RaycastHit hitInfo;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hitInfo))
+            Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(mouseRay, out hitInfo))
             {
                 PuzzlePiece piece = hitInfo.transform.gameObject.GetComponent<PuzzlePiece>();
                 if (piece != null)
                 {
-                    Debug.Log(piece.GetId());
                     CmdSelectPuzzlePiece(piece.GetId());
+                    LastMousePosition = Input.mousePosition;
+                    LastMouseWorldPosition = mouseRay.origin + ((GlobalJigsawSettings.Get().MouseWorldHeight - mouseRay.origin.y) / mouseRay.direction.y) * mouseRay.direction;
                 }
             }
         }
@@ -114,21 +185,39 @@ public class JigsawPlayerController : NetworkBehaviour
         {
             CmdDeselectPuzzlePiece();
         }
-        else if (Input.GetButton("Select"))
+        else if (Input.GetButton("Select") && SelectedPieceId >= 0)
         {
-            // TODO: if reasonable, only send updates if our SelectedPieceId is valid (will need testing to verify correctness in case of delayed SyncVar updates)
-
-            float dx = Input.GetAxis("MouseX");
-            float dy = Input.GetAxis("MouseY");
-            if (dx != 0.0f && dy != 0.0f)
+            // TODO: test to verify correctness in case of delayed SelectedPieceId syncVar
+            // Handle mouse drag
+            if (Input.mousePosition != LastMousePosition)
             {
-                Debug.LogFormat("[{0}, {1}]", dx, dy);
-                // TODO: track absolute Input.mousePosition for better reliability (store in ButtonDown, if changed then send update)
-                // TODO: compute world-space XZ updates by projecting screen delta into horizontal plane delta (maybe cast both rays onto y=0 plane and subtract result)
-                CmdMouseDrag(dx, dy);
+                Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Vector3 mouseWorld = mouseRay.origin + ((GlobalJigsawSettings.Get().MouseWorldHeight - mouseRay.origin.y) / mouseRay.direction.y) * mouseRay.direction;
+                Vector3 diff = mouseWorld - LastMouseWorldPosition;
+                LastMousePosition = Input.mousePosition;
+                LastMouseWorldPosition = mouseWorld;
+                CmdMouseDrag(diff.x, diff.z);
             }
 
-            // TODO: rotate and lock inputs/RPCs
+            // Handle piece rotation
+            if (Input.GetButtonDown("RotateLeft"))
+            {
+                CmdRotateLeft();
+            }
+            else if (Input.GetButtonDown("RotateRight"))
+            {
+                CmdRotateRight();
+            }
+        }
+
+        // DEBUG commands below
+        if (Input.GetKeyDown(KeyCode.RightBracket))
+        {
+            CmdDebugRotateAllPieces(10.0f);
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftBracket))
+        {
+            CmdDebugRotateAllPieces(-10.0f);
         }
     }
 }

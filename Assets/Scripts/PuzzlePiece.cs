@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 
 public class PuzzlePiece : NetworkBehaviour
 {
+    [HideInInspector]
     public int PlayerControllerId = -1; // The owning player, only valid on the server
 
     [SyncVar]
