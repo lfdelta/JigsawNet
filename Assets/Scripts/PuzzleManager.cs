@@ -16,6 +16,15 @@ public class PuzzleManager : MonoBehaviour
 
     void Start()
     {
+        if (StaticJigsawData.PuzzleWidth >= 2)
+        {
+            GridWidth = StaticJigsawData.PuzzleWidth;
+        }
+        if (StaticJigsawData.PuzzleHeight >= 2)
+        {
+            GridHeight = StaticJigsawData.PuzzleHeight;
+        }
+
         PuzzleRandomizer = (PuzzleMeshRandomizer)FindObjectOfType(typeof(PuzzleMeshRandomizer));
         GeneratePuzzlePieces(StaticJigsawData.PuzzleTexture);
     }

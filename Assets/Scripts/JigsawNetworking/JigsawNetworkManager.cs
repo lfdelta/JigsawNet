@@ -1,12 +1,38 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.Networking.Match;
+using UnityEngine.UI;
 
 // Sample code from https://docs.unity3d.com/Manual/UNetManager.html
 
 public class JigsawNetworkManager : NetworkManager
 {
+    public Slider PuzzleWidthSlider;
+    public Slider PuzzleHeightSlider;
+    public InputField HostAddressInput;
+
     private TextureTransfer texTransfer;
+
+
+    public void StartJigsawHost()
+    {
+        if (StaticJigsawData.PuzzleTexture != null)
+        {
+            StaticJigsawData.PuzzleWidth = (uint)PuzzleWidthSlider.value;
+            StaticJigsawData.PuzzleHeight = (uint)PuzzleHeightSlider.value;
+            StartHost();
+        }
+    }
+
+
+    public void StartJigsawClient()
+    {
+        string hostAddr = HostAddressInput.text;
+        if (NetworkUtils.IsValidHexAddr(hostAddr))
+        {
+            Debug.Log("START CLIENT");
+            // TODO: StartClient()
+        }
+    }
 
 
     //~ Begin server callbacks
@@ -68,6 +94,8 @@ public class JigsawNetworkManager : NetworkManager
     public override void OnStartHost()
     {
         Debug.Log("Host has started");
+
+        StaticJigsawData.IsHost = true;
     }
 
 

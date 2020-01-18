@@ -8,6 +8,10 @@ public class PuzzlePiece : NetworkBehaviour
     [HideInInspector]
     public int PlayerControllerId = -1; // The owning player, only valid on the server
 
+    [HideInInspector]
+    [SyncVar(hook = "OnChangeGravity")]
+    public bool UseGravity = true;
+
     [SyncVar]
     private int Id = -1; // Index into the server's PuzzleManager array
     
@@ -25,6 +29,8 @@ public class PuzzlePiece : NetworkBehaviour
 
     [SyncVar]
     private float MatOffsetY;
+
+    private Rigidbody Rbody;
 
 
     // Updates mesh, rotates UV coordinates, and updates world rotation to match
@@ -91,6 +97,8 @@ public class PuzzlePiece : NetworkBehaviour
         {
             ClientSetPuzzleTexture(StaticJigsawData.PuzzleTexture);
         }
+        Rbody = GetComponent<Rigidbody>();
+        Rbody.useGravity = UseGravity;
     }
 
 
@@ -108,5 +116,11 @@ public class PuzzlePiece : NetworkBehaviour
         PuzzleMat.SetFloat("_Scale", Scale);
         PuzzleMat.SetFloat("_OffsetX", OffsetX);
         PuzzleMat.SetFloat("_OffsetY", OffsetY);
+    }
+
+
+    public void OnChangeGravity(bool Gravity)
+    {
+        Rbody.useGravity = Gravity;
     }
 }

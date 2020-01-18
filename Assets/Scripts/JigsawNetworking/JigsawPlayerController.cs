@@ -80,7 +80,33 @@ public class JigsawPlayerController : NetworkBehaviour
             piece.transform.position = pos;
 
             piece.GetComponent<Rigidbody>().useGravity = false;
+            piece.UseGravity = false;
         }
+    }
+
+
+    [Command]
+    void CmdDeselectPuzzlePiece()
+    {
+        if (SelectedPieceId < 0)
+        {
+            return;
+        }
+        PuzzlePiece piece = puzzleManager.GetPiece(SelectedPieceId);
+        if (piece != null && piece.PlayerControllerId == PlayerId)
+        {
+            piece.PlayerControllerId = -1;
+
+            // Snap to XZ grid
+            Vector3 pos = piece.transform.position;
+            pos.x = Mathf.Round(pos.x);
+            pos.z = Mathf.Round(pos.z);
+            piece.transform.position = pos;
+
+            piece.GetComponent<Rigidbody>().useGravity = true;
+            piece.UseGravity = true;
+        }
+        SelectedPieceId = -1;
     }
 
 
@@ -134,30 +160,6 @@ public class JigsawPlayerController : NetworkBehaviour
         {
             RotatePiece(piece, 90.0f);
         }
-    }
-
-
-    [Command]
-    void CmdDeselectPuzzlePiece()
-    {
-        if (SelectedPieceId < 0)
-        {
-            return;
-        }
-        PuzzlePiece piece = puzzleManager.GetPiece(SelectedPieceId);
-        if (piece != null && piece.PlayerControllerId == PlayerId)
-        {
-            piece.PlayerControllerId = -1;
-
-            // Snap to XZ grid
-            Vector3 pos = piece.transform.position;
-            pos.x = Mathf.Round(pos.x);
-            pos.z = Mathf.Round(pos.z);
-            piece.transform.position = pos;
-
-            piece.GetComponent<Rigidbody>().useGravity = true;
-        }
-        SelectedPieceId = -1;
     }
 
 
@@ -218,6 +220,21 @@ public class JigsawPlayerController : NetworkBehaviour
         else if (Input.GetKeyDown(KeyCode.LeftBracket))
         {
             CmdDebugRotateAllPieces(-10.0f);
+        }
+        else if (Input.GetKeyDown(KeyCode.P))
+        {
+            // Temp unit tests for IP conversion
+            string ipv4 = NetworkUtils.GetPublicIPAddress();
+            string hex = NetworkUtils.IPv4toHex(ipv4);
+            Debug.Log(ipv4 + " -> " + hex + " -> " + NetworkUtils.HexToIPv4(hex));
+
+            ipv4 = "0.0.0.0";
+            hex = NetworkUtils.IPv4toHex(ipv4);
+            Debug.Log(ipv4 + " -> " + hex + " -> " + NetworkUtils.HexToIPv4(hex));
+
+            ipv4 = "14.0.255.127";
+            hex = NetworkUtils.IPv4toHex(ipv4);
+            Debug.Log(ipv4 + " -> " + hex + " -> " + NetworkUtils.HexToIPv4(hex));
         }
     }
 }

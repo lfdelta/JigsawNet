@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GlobalJigsawSettings : MonoBehaviour
 {
@@ -29,6 +27,6 @@ public class GlobalJigsawSettings : MonoBehaviour
         }
         Instance = this;
 
-        MouseWorldHeight = PuzzlePieceSelectedHeight + 0.2f;
+        MouseWorldHeight = PuzzlePieceSelectedHeight + 0.2f; // Add the thickness of the puzzle piece mesh
     }
 }
