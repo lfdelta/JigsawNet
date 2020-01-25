@@ -22,7 +22,10 @@ public class PuzzlePiece : NetworkBehaviour
     private float Rotation;
     
     [SyncVar]
-    private float MatScale;
+    private float MatScaleX;
+
+    [SyncVar]
+    private float MatScaleY;
 
     [SyncVar]
     private float MatOffsetX;
@@ -81,12 +84,13 @@ public class PuzzlePiece : NetworkBehaviour
     }
 
 
-    public void SetMaterialInfo(Texture2D PuzzleTexture, float Scale, float OffsetX, float OffsetY)
+    public void SetMaterialInfo(Texture2D PuzzleTexture, float ScaleX, float ScaleY, float OffsetX, float OffsetY)
     {
-        MatScale = Scale;
+        MatScaleX = ScaleX;
+        MatScaleY = ScaleY;
         MatOffsetX = OffsetX;
         MatOffsetY = OffsetY;
-        InternalSetMaterialInfo(PuzzleTexture, Scale, OffsetX, OffsetY);
+        InternalSetMaterialInfo(PuzzleTexture, ScaleX, ScaleY, OffsetX, OffsetY);
     }
 
 
@@ -105,15 +109,16 @@ public class PuzzlePiece : NetworkBehaviour
     public void ClientSetPuzzleTexture(Texture2D PuzzleTexture)
     {
         InternalSetMesh(PuzzleMeshRandomizer.GetPuzzleMesh(ShapeEnum), Rotation);
-        InternalSetMaterialInfo(PuzzleTexture, MatScale, MatOffsetX, MatOffsetY);
+        InternalSetMaterialInfo(PuzzleTexture, MatScaleX, MatScaleY, MatOffsetX, MatOffsetY);
     }
 
 
-    private void InternalSetMaterialInfo(Texture2D PuzzleTexture, float Scale, float OffsetX, float OffsetY)
+    private void InternalSetMaterialInfo(Texture2D PuzzleTexture, float ScaleX, float ScaleY, float OffsetX, float OffsetY)
     {
         Material PuzzleMat = GetComponent<MeshRenderer>().material;
         PuzzleMat.SetTexture("_MainTex", PuzzleTexture);
-        PuzzleMat.SetFloat("_Scale", Scale);
+        PuzzleMat.SetFloat("_ScaleX", ScaleX);
+        PuzzleMat.SetFloat("_ScaleY", ScaleY);
         PuzzleMat.SetFloat("_OffsetX", OffsetX);
         PuzzleMat.SetFloat("_OffsetY", OffsetY);
     }

@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 209259821139085390}
   - component: {fileID: 7930863247212718264}
-  - component: {fileID: 209259821139085388}
   m_Layer: 0
   m_Name: Networking
   m_TagString: Untagged
@@ -116,19 +115,6 @@ MonoBehaviour:
   matchSize: 8
   isNetworkActive: 0
   matchMaker: {fileID: 0}
---- !u!114 &209259821139085388
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 209259821139085387}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4394a3eef724546f896557197e2d6c44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  manager: {fileID: 0}
-  showGUI: 1
-  offsetX: 0
-  offsetY: 0
+  PuzzleWidthSlider: {fileID: 0}
+  PuzzleHeightSlider: {fileID: 0}
+  HostAddressInput: {fileID: 0}

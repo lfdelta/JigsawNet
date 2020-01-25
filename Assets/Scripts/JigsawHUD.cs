@@ -4,6 +4,7 @@ using UnityEngine.UI;
 public class JigsawHUD : MonoBehaviour
 {
     public GameObject HostHUD;
+    public GameObject HostHUDHiddenTab;
     public Text HostIPText;
 
 
@@ -16,9 +17,30 @@ public class JigsawHUD : MonoBehaviour
     }
 
 
-    public void EnableHostHUD()
+    public void ToggleHostHUD()
     {
+        if (HostHUD.activeInHierarchy)
+        {
+            HideHostHUD();
+        }
+        else
+        {
+            EnableHostHUD();
+        }
+    }
+
+
+    private void EnableHostHUD()
+    {
+        HostHUDHiddenTab.SetActive(false);
         HostHUD.SetActive(true);
         HostIPText.text = "Lobby ID: " + NetworkUtils.IPv4toHex(NetworkUtils.GetPublicIPAddress());
+    }
+
+
+    private void HideHostHUD()
+    {
+        HostHUD.SetActive(false);
+        HostHUDHiddenTab.SetActive(true);
     }
 }

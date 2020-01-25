@@ -19,6 +19,7 @@ public class JigsawNetworkManager : NetworkManager
         {
             StaticJigsawData.PuzzleWidth = (uint)PuzzleWidthSlider.value;
             StaticJigsawData.PuzzleHeight = (uint)PuzzleHeightSlider.value;
+            networkPort = 7777;
             StartHost();
         }
     }
@@ -29,8 +30,9 @@ public class JigsawNetworkManager : NetworkManager
         string hostAddr = HostAddressInput.text;
         if (NetworkUtils.IsValidHexAddr(hostAddr))
         {
-            Debug.Log("START CLIENT");
-            // TODO: StartClient()
+            networkAddress = NetworkUtils.HexToIPv4(hostAddr);
+            networkPort = 7777;
+            StartClient();
         }
     }
 

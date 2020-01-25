@@ -39,6 +39,10 @@ public class JigsawPlayerController : NetworkBehaviour
         {
             ClientUpdate();
         }
+        if (isServer)
+        {
+            HostUpdate();
+        }
     }
 
 
@@ -235,6 +239,16 @@ public class JigsawPlayerController : NetworkBehaviour
             ipv4 = "14.0.255.127";
             hex = NetworkUtils.IPv4toHex(ipv4);
             Debug.Log(ipv4 + " -> " + hex + " -> " + NetworkUtils.HexToIPv4(hex));
+        }
+    }
+
+
+    void HostUpdate()
+    {
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            JigsawHUD hud = FindObjectOfType<JigsawHUD>();
+            hud.ToggleHostHUD();
         }
     }
 }

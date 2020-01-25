@@ -9,7 +9,7 @@ public class JigsawFileBrowser : MonoBehaviour
     public string[] FileExtensions;
     public int MaxFileSize = -1;
     public Text OutputField;
-    public RawImage OutputImage;
+    public DynamicTexturePreview ImagePreview;
 
     private TextureLoader Loader;
 
@@ -23,6 +23,7 @@ public class JigsawFileBrowser : MonoBehaviour
     public void OpenFileBrowser()
     {
         OpenFileBrowser(FileBrowserMode.Load);
+        ImagePreview.EnableGridOverlay(false);
     }
 
 
@@ -39,7 +40,14 @@ public class JigsawFileBrowser : MonoBehaviour
 
         // Subscribe to OnFileSelect event (call LoadFileUsingPath using path) 
         fileBrowserScript.OpenFilePanel(FileExtensions, MaxFileSize);
+        fileBrowserScript.OnFileBrowserClose += HandleBrowserClosed;
         fileBrowserScript.OnFileSelect += LoadFileUsingPath;
+    }
+
+
+    private void HandleBrowserClosed()
+    {
+        ImagePreview.EnableGridOverlay(true);
     }
 
 
@@ -56,12 +64,13 @@ public class JigsawFileBrowser : MonoBehaviour
         {
             Debug.Log("LoadFileUsingPath: empty path given");
         }
+        ImagePreview.EnableGridOverlay(true);
     }
 
 
     private void HandleOnTextureLoaded(Texture2D LoadedTexture)
     {
-        OutputImage.texture = LoadedTexture;
+        ImagePreview.UpdatePreviewImage(LoadedTexture);
         Loader.OnTextureLoaded -= HandleOnTextureLoaded;
 
         // Preprocess the texture to reduce size

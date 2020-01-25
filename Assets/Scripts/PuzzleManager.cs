@@ -59,20 +59,19 @@ public class PuzzleManager : MonoBehaviour
         PuzzleRandomizer.InitializeRandomizer(0, GridWidth, GridHeight);
 
         // Compute the scale and offset, cutting off edges from the texture as needed (rather than letterboxing)
+        // Texture UV coords are [0,0] in the lower-left to [1,1] in the upper-right
+        float pieceScaleX = 1.0f / (float)GridWidth;
+        float pieceScaleY = 1.0f / (float)GridHeight;
+        Vector2 puzzleRoot;
         float wScale = (float)PuzzleTexture.width / (float)GridWidth;
         float hScale = (float)PuzzleTexture.height / (float)GridHeight;
-        float pieceScale;
-        Vector2 puzzleRoot;
-        // Texture UV coords are [0,0] in the lower-left to [1,1] in the upper-right
         if (wScale < hScale)
-        {
-            pieceScale = (1.0f / (float)GridWidth);
-            puzzleRoot = new Vector2(0.0f, 0.5f * (1 - GridHeight * pieceScale));
+        { 
+            puzzleRoot = new Vector2(0.0f, 0.5f * (1.0f - GridHeight * pieceScaleY)); // TODO
         }
         else
         {
-            pieceScale = (1.0f / (float)GridHeight);
-            puzzleRoot = new Vector2(0.5f * (1 - GridWidth * pieceScale), 0.0f);
+            puzzleRoot = new Vector2(0.5f * (1.0f - GridWidth * pieceScaleX), 0.0f); // TODO
         }
 
         // Spawn and initialize puzzle pieces
@@ -86,7 +85,7 @@ public class PuzzleManager : MonoBehaviour
 
                 PuzzlePiece piece = Instantiate(PuzzlePiecePrefab, Vector3.zero, spawnRot).GetComponent<PuzzlePiece>();
                 PuzzleRandomizer.SetupPiece(ref piece, x, y);
-                piece.SetMaterialInfo(PuzzleTexture, pieceScale, puzzleRoot.x + x * pieceScale, puzzleRoot.y + y * pieceScale);
+                piece.SetMaterialInfo(PuzzleTexture, pieceScaleX, pieceScaleY, puzzleRoot.x + x * pieceScaleX, puzzleRoot.y + y * pieceScaleY);
                 piece.SetId(ind);
                 Pieces[ind] = piece;
             }

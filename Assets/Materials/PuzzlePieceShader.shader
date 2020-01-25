@@ -5,7 +5,8 @@
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         _Metallic ("Metallic", Range(0,1)) = 0.0
-        _Scale ("Scale", Float) = 1.0
+        _ScaleX ("Scale X", Float) = 1.0
+        _ScaleY ("Scale Y", Float) = 1.0
         _OffsetX ("Offset X", Float) = 0.0
         _OffsetY ("Offset Y", Float) = 0.0
     }
@@ -30,7 +31,8 @@
 
         half _Glossiness;
         half _Metallic;
-        float _Scale;
+        float _ScaleX;
+        float _ScaleY;
         float _OffsetX;
         float _OffsetY;
 
@@ -44,9 +46,9 @@
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
             // Albedo comes from a texture
-            fixed4 c = tex2D (_MainTex, float2(_OffsetX, _OffsetY) + _Scale * (IN.uv_MainTex));
+            fixed4 c = tex2D (_MainTex, float2(_OffsetX + _ScaleX * IN.uv_MainTex.x, _OffsetY + _ScaleY * IN.uv_MainTex.y));
             o.Albedo = c.rgb;
-            o.Alpha = 1.0f;
+            o.Alpha = 1.0;
 
             // Metallic and smoothness come from slider variables
             o.Metallic = _Metallic;
