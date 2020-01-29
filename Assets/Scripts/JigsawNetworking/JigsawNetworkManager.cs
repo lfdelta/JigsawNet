@@ -9,31 +9,48 @@ public class JigsawNetworkManager : NetworkManager
     public Slider PuzzleWidthSlider;
     public Slider PuzzleHeightSlider;
     public InputField HostAddressInput;
+    public InputField PlayerNameInput;
 
     private TextureTransfer texTransfer;
 
 
     public void StartJigsawHost()
     {
-        if (StaticJigsawData.PuzzleTexture != null)
+        if (StaticJigsawData.PuzzleTexture == null)
         {
-            StaticJigsawData.PuzzleWidth = (uint)PuzzleWidthSlider.value;
-            StaticJigsawData.PuzzleHeight = (uint)PuzzleHeightSlider.value;
-            networkPort = 7777;
-            StartHost();
+            StaticJigsawData.ErrorHUD.DisplayMessage("You must load a valid puzzle image in order to host a game", 5.0f);
+            return;
         }
+        if (PlayerNameInput.text.Length < 4)
+        {
+            StaticJigsawData.ErrorHUD.DisplayMessage("You must have a valid display name, with at least 4 characters", 5.0f);
+            return;
+        }
+        StaticJigsawData.LocalPlayerName = PlayerNameInput.text;
+        StaticJigsawData.PuzzleWidth = (uint)PuzzleWidthSlider.value;
+        StaticJigsawData.PuzzleHeight = (uint)PuzzleHeightSlider.value;
+        networkPort = 7777;
+        StartHost();
     }
 
 
     public void StartJigsawClient()
     {
-        string hostAddr = HostAddressInput.text;
-        if (NetworkUtils.IsValidHexAddr(hostAddr))
+        if (PlayerNameInput.text.Length < 4)
         {
-            networkAddress = NetworkUtils.HexToIPv4(hostAddr);
-            networkPort = 7777;
-            StartClient();
+            StaticJigsawData.ErrorHUD.DisplayMessage("You must have a valid display name, with at least 4 characters", 5.0f);
+            return;
         }
+        string hostAddr = HostAddressInput.text;
+        if (!NetworkUtils.IsValidHexAddr(hostAddr))
+        {
+            StaticJigsawData.ErrorHUD.DisplayMessage("Provided host ID is invalid. It must be 8 characters long, using 0-9 and A-B", 5.0f);
+            return;
+        }
+        StaticJigsawData.LocalPlayerName = PlayerNameInput.text;
+        networkAddress = NetworkUtils.HexToIPv4(hostAddr);
+        networkPort = 7777;
+        StartClient();
     }
 
 
@@ -90,6 +107,7 @@ public class JigsawNetworkManager : NetworkManager
     public override void OnServerError(NetworkConnection conn, int errorCode)
     {
         Debug.Log("Server network error occurred: " + (NetworkError)errorCode);
+        StaticJigsawData.ErrorHUD.DisplayMessage("Network error: " + ((NetworkError)errorCode).ToString(), 5.0f);
     }
 
 
@@ -135,7 +153,11 @@ public class JigsawNetworkManager : NetworkManager
         StopClient();
         if (conn.lastError != NetworkError.Ok)
         {
-            if (LogFilter.logError) { Debug.LogError("ClientDisconnected due to error: " + conn.lastError); }
+            if (LogFilter.logError)
+            {
+                Debug.LogError("ClientDisconnected due to error: " + conn.lastError);
+            }
+            StaticJigsawData.ErrorHUD.DisplayMessage("Network error: " + ((NetworkError)conn.lastError).ToString(), 10.0f);
         }
         Debug.Log("Client disconnected from server: " + conn);
     }
@@ -144,6 +166,7 @@ public class JigsawNetworkManager : NetworkManager
     public override void OnClientError(NetworkConnection conn, int errorCode)
     {
         Debug.Log("Client network error occurred: " + (NetworkError)errorCode);
+        StaticJigsawData.ErrorHUD.DisplayMessage("Network error: " + ((NetworkError)errorCode).ToString(), 10.0f);
     }
 
 
