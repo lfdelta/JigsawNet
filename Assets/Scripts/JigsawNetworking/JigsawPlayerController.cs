@@ -170,8 +170,20 @@ public class JigsawPlayerController : NetworkBehaviour
     // Handle client inputs, including local controls and RPC events
     private void ClientUpdate()
     {
-        // TODO: local camera controls (pan, rotate, reset to fixed camera orientation)
-        
+        // HUD controls
+        JigsawHUD hud = FindObjectOfType<JigsawHUD>();
+        if (hud)
+        {
+            foreach (TogglableHUD h in hud.ClientToggles)
+            {
+                if (Input.GetKeyDown(h.ToggleKey))
+                {
+                    h.ToggleVisible();
+                }
+            }
+        }
+
+        // Puzzle piece interactions
         if (Input.GetButtonDown("Select"))
         {
             RaycastHit hitInfo;
@@ -225,30 +237,36 @@ public class JigsawPlayerController : NetworkBehaviour
         {
             CmdDebugRotateAllPieces(-10.0f);
         }
-        else if (Input.GetKeyDown(KeyCode.P))
-        {
-            // Temp unit tests for IP conversion
-            string ipv4 = NetworkUtils.GetPublicIPAddress();
-            string hex = NetworkUtils.IPv4toHex(ipv4);
-            Debug.Log(ipv4 + " -> " + hex + " -> " + NetworkUtils.HexToIPv4(hex));
+        //else if (Input.GetKeyDown(KeyCode.P))
+        //{
+        //    // Temp unit tests for IP conversion
+        //    string ipv4 = NetworkUtils.GetPublicIPAddress();
+        //    string hex = NetworkUtils.IPv4toHex(ipv4);
+        //    Debug.Log(ipv4 + " -> " + hex + " -> " + NetworkUtils.HexToIPv4(hex));
 
-            ipv4 = "0.0.0.0";
-            hex = NetworkUtils.IPv4toHex(ipv4);
-            Debug.Log(ipv4 + " -> " + hex + " -> " + NetworkUtils.HexToIPv4(hex));
+        //    ipv4 = "0.0.0.0";
+        //    hex = NetworkUtils.IPv4toHex(ipv4);
+        //    Debug.Log(ipv4 + " -> " + hex + " -> " + NetworkUtils.HexToIPv4(hex));
 
-            ipv4 = "14.0.255.127";
-            hex = NetworkUtils.IPv4toHex(ipv4);
-            Debug.Log(ipv4 + " -> " + hex + " -> " + NetworkUtils.HexToIPv4(hex));
-        }
+        //    ipv4 = "14.0.255.127";
+        //    hex = NetworkUtils.IPv4toHex(ipv4);
+        //    Debug.Log(ipv4 + " -> " + hex + " -> " + NetworkUtils.HexToIPv4(hex));
+        //}
     }
 
 
     void HostUpdate()
     {
-        if (Input.GetKeyDown(KeyCode.H))
+        JigsawHUD hud = FindObjectOfType<JigsawHUD>();
+        if (hud)
         {
-            JigsawHUD hud = FindObjectOfType<JigsawHUD>();
-            hud.ToggleHostHUD();
+            foreach (TogglableHUD h in hud.HostToggles)
+            {
+                if (Input.GetKeyDown(h.ToggleKey))
+                {
+                    h.ToggleVisible();
+                }
+            }
         }
     }
 }

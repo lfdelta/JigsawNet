@@ -1,0 +1,97 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CameraController : MonoBehaviour
+{
+    public float HeightSpeed;
+    public float HeightSpeedHeld;
+    public float HeightSpeedTransitionTime;
+
+    public float PanSpeed;
+    public float PanSpeedHeld;
+    public float PanSpeedTransitionTime;
+
+    public float[] PitchAngles;
+
+    public Vector2 XBounds;
+    public Vector2 YBounds;
+    public Vector2 ZBounds;
+
+    private Camera cam;
+    private int PitchInd;
+    private float HeightHeldTime;
+    private float PanHeldTime;
+    
+
+    void Start()
+    {
+        cam = Camera.main;
+
+        PitchInd = 0;
+        UpdateCameraPitch();
+
+        HeightHeldTime = 0.0f;
+        PanHeldTime = 0.0f;
+    }
+
+
+    void Update()
+    {
+        float moveX = Input.GetAxis("Horizontal");
+        float moveZ = Input.GetAxis("Vertical");
+        float moveY = Input.GetAxis("Zoom");
+
+        if (moveX != 0.0f || moveZ != 0.0f)
+        {
+            PanHeldTime += Time.deltaTime;
+            float speed = (PanHeldTime >= PanSpeedTransitionTime) ? PanSpeedHeld : PanSpeed;
+            moveX *= speed * Time.deltaTime;
+            moveZ *= speed * Time.deltaTime;
+        }
+        else
+        {
+            PanHeldTime = 0.0f;
+        }
+        if (moveY != 0.0f)
+        {
+            HeightHeldTime += Time.deltaTime;
+            moveY *= (HeightHeldTime >= HeightSpeedTransitionTime) ? HeightSpeedHeld : HeightSpeed;
+            moveY *= Time.deltaTime;
+        }
+        else
+        {
+            HeightHeldTime = 0.0f;
+        }
+
+        Vector3 newPos = cam.transform.position + new Vector3(moveX, moveY, moveZ);
+        newPos.x = Mathf.Clamp(newPos.x, XBounds.x, XBounds.y);
+        newPos.y = Mathf.Clamp(newPos.y, YBounds.x, YBounds.y);
+        newPos.z = Mathf.Clamp(newPos.z, ZBounds.x, ZBounds.y);
+        cam.transform.position = newPos;
+
+        if (Input.GetButtonDown("AngleUp"))
+        {
+            if (PitchInd > 0)
+            {
+                --PitchInd;
+                UpdateCameraPitch();
+            }
+        }
+        else if (Input.GetButtonDown("AngleDown"))
+        {
+            if (PitchInd < PitchAngles.Length - 1)
+            {
+                ++PitchInd;
+                UpdateCameraPitch();
+            }
+        }
+    }
+
+
+    private void UpdateCameraPitch()
+    {
+        float pitch = PitchAngles[PitchInd];
+        cam.transform.rotation = Quaternion.Euler(90.0f - pitch, 0.0f, 0.0f);
+    }
+}

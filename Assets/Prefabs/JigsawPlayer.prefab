@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1255893111636261500}
   - component: {fileID: -7813339015057350296}
   - component: {fileID: 4477288494763794617}
+  - component: {fileID: 4134674796837201086}
   m_Layer: 0
   m_Name: JigsawPlayer
   m_TagString: Untagged
@@ -77,3 +78,32 @@ MonoBehaviour:
     i15: 0
   m_ServerOnly: 0
   m_LocalPlayerAuthority: 1
+--- !u!114 &4134674796837201086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5195542023731673382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c4bfa33aec53445ca684de1b92463dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  HeightSpeed: 10
+  HeightSpeedHeld: 30
+  HeightSpeedTransitionTime: 1
+  PanSpeed: 5
+  PanSpeedHeld: 10
+  PanSpeedTransitionTime: 1
+  PitchAngles:
+  - 0
+  - 5
+  - 10
+  - 15
+  - 20
+  - 25
+  - 30
+  XBounds: {x: -25, y: 75}
+  YBounds: {x: 10, y: 50}
+  ZBounds: {x: -25, y: 75}

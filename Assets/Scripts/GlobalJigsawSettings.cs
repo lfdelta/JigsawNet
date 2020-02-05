@@ -6,6 +6,10 @@ public class GlobalJigsawSettings : MonoBehaviour
 
     public float PuzzlePieceSelectedHeight = 0.2f;
 
+    public Vector2 PuzzleBoardBoundsX = new Vector2(-25.0f, 75.0f);
+    public Vector2 PuzzleBoardBoundsY = new Vector2(-25.0f, 75.0f);
+    public Vector2 PuzzleBoardBoundsZ = new Vector2(-25.0f, 75.0f);
+
     // Puzzle piece height when selected, plus puzzle piece thickness.
     [HideInInspector]
     public float MouseWorldHeight;

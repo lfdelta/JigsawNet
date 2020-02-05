@@ -124,6 +124,19 @@ public class PuzzlePiece : NetworkBehaviour
     }
 
 
+    private void Update()
+    {
+        GlobalJigsawSettings settings = GlobalJigsawSettings.Get();
+        float newX = Mathf.Clamp(transform.position.x, settings.PuzzleBoardBoundsX.x, settings.PuzzleBoardBoundsX.y);
+        float newY = Mathf.Clamp(transform.position.y, settings.PuzzleBoardBoundsY.x, settings.PuzzleBoardBoundsY.y);
+        float newZ = Mathf.Clamp(transform.position.z, settings.PuzzleBoardBoundsZ.x, settings.PuzzleBoardBoundsZ.y);
+        if (transform.position.x != newX || transform.position.y != newY || transform.position.z != newZ)
+        {
+            transform.position = new Vector3(newX, newY, newZ);
+        }
+    }
+
+
     public void OnChangeGravity(bool Gravity)
     {
         Rbody.useGravity = Gravity;
