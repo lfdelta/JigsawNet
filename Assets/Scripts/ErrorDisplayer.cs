@@ -9,15 +9,6 @@ public class ErrorDisplayer : MonoBehaviour
     public Text ErrorText;
 
 
-    private void Awake()
-    {
-        if (StaticJigsawData.ErrorHUD == null)
-        {
-            StaticJigsawData.ErrorHUD = this;
-        }
-    }
-
-
     public void DisplayMessage(string Message, float Duration)
     {
         StopAllCoroutines();

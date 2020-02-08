@@ -12,7 +12,7 @@ public class FormatText : MonoBehaviour
     public string[] DefaultArguments;
 
 
-    void Start()
+    void Awake()
     {
         StringText = GetComponent<Text>();
         FormatString = StringText.text;

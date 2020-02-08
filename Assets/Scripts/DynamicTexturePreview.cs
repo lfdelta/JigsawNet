@@ -11,7 +11,7 @@ public class DynamicTexturePreview : MonoBehaviour
     private Rect rect;
 
 
-    public void Start()
+    public void Awake()
     {
         rect = GetComponent<RectTransform>().rect;
 

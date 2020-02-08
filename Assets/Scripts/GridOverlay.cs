@@ -40,7 +40,7 @@ public class GridOverlay : MonoBehaviour
     }
 
 
-    public void Start()
+    public void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
         OverlayTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);

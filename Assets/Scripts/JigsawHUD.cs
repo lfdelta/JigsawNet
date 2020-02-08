@@ -36,31 +36,50 @@ public class JigsawHUD : MonoBehaviour
     public GameObject HostHUDHiddenTab;
     public Text HostIPText;
 
-    public TogglableHUD[] HostToggles;
-    public TogglableHUD[] ClientToggles;
+    public TogglableHUD[] HostOnlyToggles;
+    public TogglableHUD[] ClientOnlyToggles;
+    public TogglableHUD[] SharedToggles;
 
+    [HideInInspector] public TogglableHUD[] AvailableToggles;
+    
 
     public void Awake()
     {
-        foreach(TogglableHUD h in ClientToggles)
-        {
-            h.SetVisible(h.StartOpen);
-        }
+        int i = 0; // For copying arrays
 
         if (StaticJigsawData.IsHost)
         {
+            AvailableToggles = new TogglableHUD[HostOnlyToggles.Length + SharedToggles.Length];
+
             HostIPText.text = "Lobby ID: " + NetworkUtils.IPv4toHex(NetworkUtils.GetPublicIPAddress());
-            foreach (TogglableHUD h in HostToggles)
+            foreach (TogglableHUD h in HostOnlyToggles)
             {
+                AvailableToggles[i++] = h;
                 h.SetVisible(h.StartOpen);
+            }
+            foreach (TogglableHUD h in ClientOnlyToggles)
+            {
+                h.FullyHide();
             }
         }
         else
         {
-            foreach (TogglableHUD h in HostToggles)
+            AvailableToggles = new TogglableHUD[ClientOnlyToggles.Length + SharedToggles.Length];
+            foreach (TogglableHUD h in HostOnlyToggles)
             {
                 h.FullyHide();
             }
+            foreach (TogglableHUD h in ClientOnlyToggles)
+            {
+                AvailableToggles[i++] = h;
+                h.SetVisible(h.StartOpen);
+            }
+        }
+
+        foreach (TogglableHUD h in SharedToggles)
+        {
+            AvailableToggles[i++] = h;
+            h.SetVisible(h.StartOpen);
         }
     }
 }

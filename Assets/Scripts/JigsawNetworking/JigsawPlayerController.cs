@@ -35,6 +35,20 @@ public class JigsawPlayerController : NetworkBehaviour
 
     void Update()
     {
+        // HUD controls
+        JigsawHUD hud = FindObjectOfType<JigsawHUD>();
+        if (hud)
+        {
+            foreach (TogglableHUD h in hud.AvailableToggles)
+            {
+                if (Input.GetKeyDown(h.ToggleKey))
+                {
+                    h.ToggleVisible();
+                }
+            }
+        }
+
+        // Other controls
         if (isLocalPlayer)
         {
             ClientUpdate();
@@ -170,19 +184,6 @@ public class JigsawPlayerController : NetworkBehaviour
     // Handle client inputs, including local controls and RPC events
     private void ClientUpdate()
     {
-        // HUD controls
-        JigsawHUD hud = FindObjectOfType<JigsawHUD>();
-        if (hud)
-        {
-            foreach (TogglableHUD h in hud.ClientToggles)
-            {
-                if (Input.GetKeyDown(h.ToggleKey))
-                {
-                    h.ToggleVisible();
-                }
-            }
-        }
-
         // Puzzle piece interactions
         if (Input.GetButtonDown("Select"))
         {
@@ -229,14 +230,14 @@ public class JigsawPlayerController : NetworkBehaviour
         }
 
         // DEBUG commands below
-        if (Input.GetKeyDown(KeyCode.RightBracket))
-        {
-            CmdDebugRotateAllPieces(10.0f);
-        }
-        else if (Input.GetKeyDown(KeyCode.LeftBracket))
-        {
-            CmdDebugRotateAllPieces(-10.0f);
-        }
+        //if (Input.GetKeyDown(KeyCode.RightBracket))
+        //{
+        //    CmdDebugRotateAllPieces(10.0f);
+        //}
+        //else if (Input.GetKeyDown(KeyCode.LeftBracket))
+        //{
+        //    CmdDebugRotateAllPieces(-10.0f);
+        //}
         //else if (Input.GetKeyDown(KeyCode.P))
         //{
         //    // Temp unit tests for IP conversion
@@ -257,16 +258,6 @@ public class JigsawPlayerController : NetworkBehaviour
 
     void HostUpdate()
     {
-        JigsawHUD hud = FindObjectOfType<JigsawHUD>();
-        if (hud)
-        {
-            foreach (TogglableHUD h in hud.HostToggles)
-            {
-                if (Input.GetKeyDown(h.ToggleKey))
-                {
-                    h.ToggleVisible();
-                }
-            }
-        }
+        // Empty for now
     }
 }
