@@ -7,6 +7,7 @@ public struct TogglableHUD
     public GameObject VisibleHUD;
     public GameObject HiddenHUD;
     public KeyCode ToggleKey;
+    public bool StartOpen;
 
     public void SetVisible(bool Visible)
     {
@@ -19,6 +20,12 @@ public struct TogglableHUD
         bool active = VisibleHUD.activeInHierarchy;
         VisibleHUD.SetActive(!active);
         HiddenHUD.SetActive(active);
+    }
+
+    public void FullyHide()
+    {
+        VisibleHUD.SetActive(false);
+        HiddenHUD.SetActive(false);
     }
 }
 
@@ -37,7 +44,7 @@ public class JigsawHUD : MonoBehaviour
     {
         foreach(TogglableHUD h in ClientToggles)
         {
-            h.SetVisible(true);
+            h.SetVisible(h.StartOpen);
         }
 
         if (StaticJigsawData.IsHost)
@@ -45,15 +52,14 @@ public class JigsawHUD : MonoBehaviour
             HostIPText.text = "Lobby ID: " + NetworkUtils.IPv4toHex(NetworkUtils.GetPublicIPAddress());
             foreach (TogglableHUD h in HostToggles)
             {
-                h.SetVisible(true);
+                h.SetVisible(h.StartOpen);
             }
         }
         else
         {
             foreach (TogglableHUD h in HostToggles)
             {
-                h.VisibleHUD.SetActive(false);
-                h.HiddenHUD.SetActive(false);
+                h.FullyHide();
             }
         }
     }
