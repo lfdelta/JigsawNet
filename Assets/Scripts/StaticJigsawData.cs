@@ -12,4 +12,6 @@ public static class StaticJigsawData
     public static string HostPublicIP = "";
 
     public static string LocalPlayerName = "";
+
+    public static ErrorDisplayer ErrorHUD;
 }

@@ -9,14 +9,13 @@ public class JigsawMenu : MonoBehaviour
     public Slider PuzzleHeightSlider;
     public InputField HostAddressInput;
     public InputField PlayerNameInput;
-
     public DynamicTexturePreview TexturePreview;
-    //public GridOverlay TextureOverlay;
-    public ErrorDisplayer ErrorHUD;
 
 
     private void Start()
     {
+        // If the player has previously filled out the menu fields, restore their values
+
         if (StaticJigsawData.LocalPlayerName.Length > 0)
         {
             PlayerNameInput.text = StaticJigsawData.LocalPlayerName;

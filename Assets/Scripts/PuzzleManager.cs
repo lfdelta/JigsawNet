@@ -60,18 +60,22 @@ public class PuzzleManager : MonoBehaviour
 
         // Compute the scale and offset, cutting off edges from the texture as needed (rather than letterboxing)
         // Texture UV coords are [0,0] in the lower-left to [1,1] in the upper-right
-        float pieceScaleX = 1.0f / (float)GridWidth;
-        float pieceScaleY = 1.0f / (float)GridHeight;
-        Vector2 puzzleRoot;
+        float pieceScaleX;
+        float pieceScaleY;
+        Vector2 puzzleRootUV;
         float wScale = (float)PuzzleTexture.width / (float)GridWidth;
         float hScale = (float)PuzzleTexture.height / (float)GridHeight;
         if (wScale < hScale)
-        { 
-            puzzleRoot = new Vector2(0.0f, 0.5f * (1.0f - GridHeight * pieceScaleY)); // TODO
+        {
+            pieceScaleX = 1.0f / (float)GridWidth;
+            pieceScaleY = ((float)PuzzleTexture.width / (float)(PuzzleTexture.height)) * pieceScaleX;
+            puzzleRootUV = new Vector2(0.0f, 0.5f * (1.0f - GridHeight * pieceScaleY)); // TODO
         }
         else
         {
-            puzzleRoot = new Vector2(0.5f * (1.0f - GridWidth * pieceScaleX), 0.0f); // TODO
+            pieceScaleY = 1.0f / (float)GridHeight;
+            pieceScaleX = ((float)PuzzleTexture.height / (float)(PuzzleTexture.width)) * pieceScaleY;
+            puzzleRootUV = new Vector2(0.5f * (1.0f - GridWidth * pieceScaleX), 0.0f); // TODO
         }
 
         // Spawn and initialize puzzle pieces
@@ -85,7 +89,7 @@ public class PuzzleManager : MonoBehaviour
 
                 PuzzlePiece piece = Instantiate(PuzzlePiecePrefab, Vector3.zero, spawnRot).GetComponent<PuzzlePiece>();
                 PuzzleRandomizer.SetupPiece(ref piece, x, y);
-                piece.SetMaterialInfo(PuzzleTexture, pieceScaleX, pieceScaleY, puzzleRoot.x + x * pieceScaleX, puzzleRoot.y + y * pieceScaleY);
+                piece.SetMaterialInfo(PuzzleTexture, pieceScaleX, pieceScaleY, puzzleRootUV.x + x * pieceScaleX, puzzleRootUV.y + y * pieceScaleY);
                 piece.SetId(ind);
                 Pieces[ind] = piece;
             }

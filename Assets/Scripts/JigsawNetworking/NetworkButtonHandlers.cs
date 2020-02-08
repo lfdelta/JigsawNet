@@ -1,5 +1,9 @@
 ﻿using UnityEngine;
 
+/*
+ * NetworkButtonHandlers - A layer of indirection between UI input handlers and actual game-side response.
+ *                         Exists to prevent losing references (causing non-functional inputs) when changing scenes.
+ */
 public class NetworkButtonHandlers : MonoBehaviour
 {
     public void StartClient()

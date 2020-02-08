@@ -69,7 +69,7 @@ public class GridOverlay : MonoBehaviour
         float hScale = (float)TextureScreenHeight / (float)GridHeight;
 
         float cellSize;
-        Vector2 gridRoot = RectTransformToScreenSpace(rectTransform).min;
+        Vector2 gridRoot = JigsawUtilities.RectTransformToScreenSpace(rectTransform).min;
 
         // Rect coords are [0,0] in the top-left to [ScreenWidth,ScreenHeight] in the bottom-right
         if (wScale < hScale)
@@ -103,15 +103,5 @@ public class GridOverlay : MonoBehaviour
             lineRect.xMax = lineRect.xMin + LineThickness;
             GUI.DrawTexture(lineRect, OverlayTexture);
         }
-    }
-
-
-    public static Rect RectTransformToScreenSpace(RectTransform transform)
-    {
-        Vector2 size = Vector2.Scale(transform.rect.size, transform.lossyScale);
-        Rect rect = new Rect(transform.position.x, Screen.height - transform.position.y, size.x, size.y);
-        rect.x -= (transform.pivot.x * size.x);
-        rect.y -= ((1.0f - transform.pivot.y) * size.y);
-        return rect;
     }
 }

@@ -16,7 +16,7 @@ public class DynamicTexturePreview : MonoBehaviour
         rect = GetComponent<RectTransform>().rect;
 
         // Update Overlay based on initial dimensions
-        Overlay.SetTextureScreenSize(GridOverlay.RectTransformToScreenSpace(PreviewImage.rectTransform).size);
+        Overlay.SetTextureScreenSize(JigsawUtilities.RectTransformToScreenSpace(PreviewImage.rectTransform).size);
     }
 
 
@@ -34,7 +34,7 @@ public class DynamicTexturePreview : MonoBehaviour
         }
 
         // Update Overlay based on new dimensions
-        Overlay.SetTextureScreenSize(GridOverlay.RectTransformToScreenSpace(PreviewImage.rectTransform).size);
+        Overlay.SetTextureScreenSize(JigsawUtilities.RectTransformToScreenSpace(PreviewImage.rectTransform).size);
     }
 
 
