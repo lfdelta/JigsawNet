@@ -9,6 +9,10 @@ public class PuzzleManager : MonoBehaviour
     public uint GridWidth = 2;
     public uint GridHeight = 2;
 
+    public float PuzzleSpaceGridScale = 1.2f; // Scaling factor applied to (GridWidth, GridHeight) to determine board size
+    public float SpawnSpaceGridScale = 1.8f;  // Scaling factor applied to (GridWidth, GridHeight) to determine puzzle piece spawning region
+
+
     private PuzzleMeshRandomizer PuzzleRandomizer;
     private PuzzlePiece[] Pieces;
     private int LastAssignedPlayerId = -1;
@@ -27,6 +31,7 @@ public class PuzzleManager : MonoBehaviour
 
         PuzzleRandomizer = (PuzzleMeshRandomizer)FindObjectOfType(typeof(PuzzleMeshRandomizer));
         GeneratePuzzlePieces(StaticJigsawData.PuzzleTexture);
+        FindObjectOfType<BoardScalingHandler>().SetBoardDimensions(new Vector2(PuzzleSpaceGridScale * GridWidth, PuzzleSpaceGridScale * GridHeight));
     }
 
 
@@ -95,7 +100,20 @@ public class PuzzleManager : MonoBehaviour
             }
         }
 
-        AlignPiecesNeatly(Vector3.zero, Pieces);
+        GlobalJigsawSettings settings = FindObjectOfType<GlobalJigsawSettings>();
+        Rect puzzleRegion = new Rect(
+            -0.5f * PuzzleSpaceGridScale * GridWidth,
+            -0.5f * PuzzleSpaceGridScale * GridHeight,
+            PuzzleSpaceGridScale * GridWidth,
+            PuzzleSpaceGridScale * GridHeight);
+        float minX = Mathf.Max(settings.PuzzleBoardBoundsX.x, -SpawnSpaceGridScale * GridWidth);
+        float maxX = Mathf.Min(settings.PuzzleBoardBoundsX.y, SpawnSpaceGridScale * GridWidth);
+        float minZ = Mathf.Max(settings.PuzzleBoardBoundsZ.x, -SpawnSpaceGridScale * GridHeight);
+        float maxZ = Mathf.Min(settings.PuzzleBoardBoundsZ.y, SpawnSpaceGridScale * GridHeight);
+        Rect playRegion = new Rect(minX, minZ, maxX - minX, maxZ - minZ);
+        ScatterPiecesRandomly(puzzleRegion, playRegion, Pieces);
+
+        //AlignPiecesNeatly(new Vector3(-0.5f * GridWidth, 0.0f, -0.5f * GridHeight), Pieces);
         foreach (PuzzlePiece piece in Pieces)
         {
             NetworkServer.Spawn(piece.gameObject);
@@ -117,6 +135,51 @@ public class PuzzleManager : MonoBehaviour
             {
                 PuzzlePieces[y * GridWidth + x].transform.position = PuzzleWorldOrigin + new Vector3(TilingDistance * x, 0, TilingDistance * y);
             }
+        }
+    }
+
+
+    // Places PuzzlePieces randomly throughout the area defined by TotalPlayRegion xor PuzzleBoardRegion, assuming TotalPlayRegion is a strict superset of PuzzleBoardRegion
+    void ScatterPiecesRandomly(Rect PuzzleBoardRegion, Rect TotalPlayRegion, PuzzlePiece[] PuzzlePieces)
+    {
+        // Divide the spawnable region into four rects, weighted by area
+        Rect bottomRegion = new Rect(TotalPlayRegion.xMin, TotalPlayRegion.yMin, TotalPlayRegion.width, PuzzleBoardRegion.yMin - TotalPlayRegion.yMin);
+        Rect topRegion = new Rect(TotalPlayRegion.xMin, PuzzleBoardRegion.yMax, TotalPlayRegion.width, TotalPlayRegion.yMax - PuzzleBoardRegion.yMax);
+        Rect leftRegion = new Rect(TotalPlayRegion.xMin, PuzzleBoardRegion.yMin, PuzzleBoardRegion.xMin - TotalPlayRegion.xMin, PuzzleBoardRegion.height);
+        Rect rightRegion = new Rect(PuzzleBoardRegion.xMax, PuzzleBoardRegion.yMin, TotalPlayRegion.xMax - PuzzleBoardRegion.xMax, PuzzleBoardRegion.height);
+
+        Rect[] regions = { bottomRegion, topRegion, leftRegion, rightRegion };
+        float[] weightedAreas = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        float totalArea = 0.0f;
+        for (int i = 0; i < regions.Length; ++i)
+        {
+            totalArea += regions[i].size.x * regions[i].size.y;
+            weightedAreas[i] = totalArea;
+        }
+        for (int i = 0; i < weightedAreas.Length - 1; ++i)
+        {
+            weightedAreas[i] /= totalArea;
+        }
+        weightedAreas[weightedAreas.Length - 1] = 1.0f;
+
+        // Assign each puzzle piece to a spawnable subregion, and then to a position within that subregion
+        foreach (PuzzlePiece piece in PuzzlePieces)
+        {
+            float rand = Random.value;
+            int i = 0;
+            while (weightedAreas[i] < rand)
+            {
+                ++i;
+            }
+            Rect spawnRegion = regions[i];
+
+            Vector2 offset = spawnRegion.size;
+            offset.Scale(new Vector2(Random.value, Random.value));
+            Vector2 spawnPos = spawnRegion.position + offset;
+
+            piece.transform.position = new Vector3(spawnPos.x, 0.0f, spawnPos.y);
+            piece.transform.Rotate(Vector3.up, 90.0f * Random.Range(0, 4), Space.World);
         }
     }
 }

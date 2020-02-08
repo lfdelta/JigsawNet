@@ -16,6 +16,8 @@ public class JigsawPlayerController : NetworkBehaviour
     private Vector3 LastMousePosition;
     private Vector3 LastMouseWorldPosition;
 
+    private JigsawHUD HUD;
+
 
     public override void OnStartServer()
     {
@@ -29,33 +31,29 @@ public class JigsawPlayerController : NetworkBehaviour
     {
         Debug.Log("Local player started!");
 
-        // TODO: attach to camera
+        HUD = FindObjectOfType<JigsawHUD>();
     }
 
 
     void Update()
     {
-        // HUD controls
-        JigsawHUD hud = FindObjectOfType<JigsawHUD>();
-        if (hud)
+        if (isLocalPlayer)
         {
-            foreach (TogglableHUD h in hud.AvailableToggles)
+            ClientUpdate();
+
+            // HUD controls
+            foreach (TogglableHUD h in HUD.AvailableToggles)
             {
                 if (Input.GetKeyDown(h.ToggleKey))
                 {
                     h.ToggleVisible();
                 }
             }
-        }
 
-        // Other controls
-        if (isLocalPlayer)
-        {
-            ClientUpdate();
-        }
-        if (isServer)
-        {
-            HostUpdate();
+            if (isServer)
+            {
+                HostUpdate();
+            }
         }
     }
 

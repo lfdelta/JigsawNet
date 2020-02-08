@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.UI;
 
 // Sample code from https://docs.unity3d.com/Manual/UNetManager.html
 

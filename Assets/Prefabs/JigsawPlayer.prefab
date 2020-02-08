@@ -104,6 +104,6 @@ MonoBehaviour:
   - 20
   - 25
   - 30
-  XBounds: {x: -25, y: 75}
-  YBounds: {x: 10, y: 50}
-  ZBounds: {x: -25, y: 75}
+  XBounds: {x: -50, y: 50}
+  YBounds: {x: 5, y: 50}
+  ZBounds: {x: -50, y: 50}

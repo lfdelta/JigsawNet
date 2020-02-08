@@ -45,7 +45,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PuzzlePieceRestHeight: 0
   PuzzlePieceSelectedHeight: 0.5
-  PuzzleBoardBoundsX: {x: -25, y: 75}
+  PuzzleBoardBoundsX: {x: -50, y: 50}
   PuzzleBoardBoundsY: {x: 0, y: 5}
-  PuzzleBoardBoundsZ: {x: -25, y: 75}
+  PuzzleBoardBoundsZ: {x: -50, y: 50}
   MouseWorldHeight: 0

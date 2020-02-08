@@ -33,6 +33,8 @@ public class CameraController : MonoBehaviour
 
         HeightHeldTime = 0.0f;
         PanHeldTime = 0.0f;
+
+        // TODO: set starting height based on board dimensions (see BoardScalingHandler)
     }
 
 
