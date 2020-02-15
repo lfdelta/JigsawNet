@@ -1,12 +1,26 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Networking;
 
 // Sample code from https://docs.unity3d.com/Manual/UNetManager.html
 
+
+public class ClientInfoMsg : MessageBase
+{
+    public string Username;
+};
+
+
 public class JigsawNetworkManager : NetworkManager
 {
-    private TextureTransfer texTransfer;
+    public GameObject GameWorldPrefab;
 
+    private TextureTransfer texTransfer;
+    private NetworkWorldState NetWorldState;
+
+    private Dictionary<int, ClientInfoMsg> DeferredClientInfo;
+    
 
     public void StartJigsawHost()
     {
@@ -26,6 +40,12 @@ public class JigsawNetworkManager : NetworkManager
         StaticJigsawData.PuzzleHeight = (uint)menu.PuzzleHeightSlider.value;
         networkPort = 7777;
         StartHost();
+
+        NetworkWorldState oldWorldState = FindObjectOfType<NetworkWorldState>();
+        if (oldWorldState)
+        {
+            Destroy(oldWorldState);
+        }
     }
 
 
@@ -49,6 +69,12 @@ public class JigsawNetworkManager : NetworkManager
 
         StaticJigsawData.PuzzleTexture = null; // Clear the client's texture to prevent auto-populating the puzzle pieces with their own image
         StartClient();
+
+        NetworkWorldState oldWorldState = FindObjectOfType<NetworkWorldState>();
+        if (oldWorldState)
+        {
+            Destroy(oldWorldState);
+        }
     }
 
 
@@ -69,6 +95,19 @@ public class JigsawNetworkManager : NetworkManager
 
     public override void OnServerDisconnect(NetworkConnection conn)
     {
+        for (int i = 0; i < conn.playerControllers.Count; ++i)
+        {
+            PlayerController player = conn.playerControllers[i];
+            if (player.gameObject != null)
+            {
+                JigsawPlayerController jigsawController = player.gameObject.GetComponent<JigsawPlayerController>();
+                if (jigsawController)
+                {
+                    NetWorldState.DeregisterPlayer(jigsawController.PlayerState);
+                }
+            }
+        }
+
         NetworkServer.DestroyPlayersForConnection(conn);
         if (conn.lastError != NetworkError.Ok && LogFilter.logError)
         {
@@ -85,18 +124,59 @@ public class JigsawNetworkManager : NetworkManager
     }
 
 
+    private void GenerateWorldState()
+    {
+        if (GameWorldPrefab != null)
+        {
+            GameObject gameWorldInst = GameObject.Instantiate(GameWorldPrefab, Vector3.zero, Quaternion.identity);
+            NetworkServer.Spawn(gameWorldInst);
+            NetWorldState = gameWorldInst.GetComponent<NetworkWorldState>();
+            if (NetWorldState == null)
+            {
+                Debug.LogError("JigsawNetworkManager has GameWorldPrefab with missing NetworkWorldState");
+            }
+        }
+        else
+        {
+            Debug.LogError("JigsawNetworkManager has null GameWorldPrefab property");
+        }
+    }
+
+
     public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId)
     {
+        if (NetWorldState == null)
+        {
+            GenerateWorldState();
+        }
+
         var player = (GameObject)GameObject.Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
         NetworkServer.AddPlayerForConnection(conn, player, playerControllerId);
         Debug.Log("Client has requested to get his player added to the game");
+
+        ClientInfoMsg clientMsg;
+        if (DeferredClientInfo.TryGetValue(conn.connectionId, out clientMsg))
+        {
+            JigsawPlayerState playerState = NetWorldState.RegisterPlayer(clientMsg.Username);
+            JigsawPlayerController jigsawController = player.GetComponent<JigsawPlayerController>();
+            jigsawController.PlayerState = playerState;
+            DeferredClientInfo.Remove(conn.connectionId);
+        }
     }
 
 
     public override void OnServerRemovePlayer(NetworkConnection conn, PlayerController player)
     {
+        // TODO: figure out why deregister isn't getting called
+        Debug.Log("OnServerRemovePlayer executed");
         if (player.gameObject != null)
         {
+            JigsawPlayerController jigsawController = player.gameObject.GetComponent<JigsawPlayerController>();
+            if (jigsawController)
+            {
+                NetWorldState.DeregisterPlayer(jigsawController.PlayerState);
+            }
+
             NetworkServer.Destroy(player.gameObject);
         }
     }
@@ -119,9 +199,12 @@ public class JigsawNetworkManager : NetworkManager
 
     public override void OnStartServer()
     {
+        base.OnStartServer();
         Debug.Log("Server has started");
 
         texTransfer = (TextureTransfer)gameObject.AddComponent(typeof(TextureTransfer));
+        NetworkServer.RegisterHandler(JigsawNetworkMsg.ClientInfo, OnServerReceiveClientInfo);
+        DeferredClientInfo = new Dictionary<int, ClientInfoMsg>();
     }
 
 
@@ -136,6 +219,32 @@ public class JigsawNetworkManager : NetworkManager
         Debug.Log("Host has stopped");
         StaticJigsawData.IsHost = false;
     }
+
+
+    private void OnServerReceiveClientInfo(NetworkMessage Msg)
+    {
+        if (Msg.conn.playerControllers.Count > 0)
+        {
+            PlayerController player = Msg.conn.playerControllers[0];
+            if (player != null && player.gameObject != null)
+            {
+                JigsawPlayerController jigsawController = player.gameObject.GetComponent<JigsawPlayerController>();
+                if (jigsawController != null)
+                {
+                    if (NetWorldState == null)
+                    {
+                        GenerateWorldState();
+                    }
+                    ClientInfoMsg clientMsg = Msg.ReadMessage<ClientInfoMsg>();
+                    JigsawPlayerState playerState = NetWorldState.RegisterPlayer(clientMsg.Username);
+                    jigsawController.PlayerState = playerState;
+                    return;
+                }
+            }
+        }
+        ClientInfoMsg tmp = Msg.ReadMessage<ClientInfoMsg>();
+        DeferredClientInfo.Add(Msg.conn.connectionId, tmp);
+    }
     //~ End server callbacks
 
 
@@ -144,6 +253,10 @@ public class JigsawNetworkManager : NetworkManager
     {
         base.OnClientConnect(conn);
         Debug.Log("Connected successfully to server, now to set up other stuff for the client...");
+
+        ClientInfoMsg msg = new ClientInfoMsg();
+        msg.Username = StaticJigsawData.LocalPlayerName;
+        client.Send(JigsawNetworkMsg.ClientInfo, msg);
     }
 
 
@@ -199,6 +312,12 @@ public class JigsawNetworkManager : NetworkManager
     public override void OnStopClient()
     {
         Debug.Log("Client has stopped");
+
+        NetworkWorldState oldWorldState = FindObjectOfType<NetworkWorldState>();
+        if (oldWorldState)
+        {
+            Destroy(oldWorldState);
+        }
     }
 
 

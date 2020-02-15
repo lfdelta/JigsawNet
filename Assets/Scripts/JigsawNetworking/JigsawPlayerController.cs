@@ -3,8 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
+public struct JigsawPlayerState
+{
+    public uint Id;
+    public string Username;
+    public Color UserColor;
+}
+
+
 public class JigsawPlayerController : NetworkBehaviour
 {
+    [HideInInspector]
+    public JigsawPlayerState PlayerState;
+
     [SyncVar]
     private int SelectedPieceId = -1;
 

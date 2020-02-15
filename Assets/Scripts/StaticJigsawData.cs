@@ -14,4 +14,6 @@ public static class StaticJigsawData
     public static string LocalPlayerName = "";
 
     public static ErrorDisplayer ErrorHUD;
+
+    public static UniqueObjectManager ObjectManager;
 }
