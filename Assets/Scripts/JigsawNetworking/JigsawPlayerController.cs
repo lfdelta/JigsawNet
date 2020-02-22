@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
 public struct JigsawPlayerState
@@ -14,27 +12,44 @@ public struct JigsawPlayerState
 public class JigsawPlayerController : NetworkBehaviour
 {
     [HideInInspector]
+    [SyncVar]
     public JigsawPlayerState PlayerState;
 
-    [SyncVar]
+    [SyncVar(hook = "OnRepSelectedPieceId")]
     private int SelectedPieceId = -1;
+    private int LastSelectedPieceId = -1;
 
     [SyncVar]
     private int PlayerId = -1;
 
-    private PuzzleManager puzzleManager;
+    private ServerPuzzleManager PuzzleManagerS;
 
     private Vector3 LastMousePosition;
     private Vector3 LastMouseWorldPosition;
 
+    private ClientPuzzleManager PuzzleManagerC;
     private JigsawHUD HUD;
 
 
     public override void OnStartServer()
     {
         base.OnStartServer();
-        puzzleManager = FindObjectOfType<PuzzleManager>();
-        PlayerId = puzzleManager.GetNextPlayerId();
+        PuzzleManagerS = FindObjectOfType<ServerPuzzleManager>();
+        PlayerId = PuzzleManagerS.GetNextPlayerId();
+    }
+
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        StaticJigsawData.ObjectManager.RequestObject("ClientPuzzleManager", ReceiveClientPuzzleManager);
+    }
+
+
+    private void ReceiveClientPuzzleManager(GameObject Manager)
+    {
+        PuzzleManagerC = Manager.GetComponent<ClientPuzzleManager>();
+        OnRepSelectedPieceId(SelectedPieceId);
     }
 
 
@@ -87,7 +102,7 @@ public class JigsawPlayerController : NetworkBehaviour
         {
             return;
         }
-        PuzzlePiece piece = puzzleManager.GetPiece(Id);
+        PuzzlePiece piece = PuzzleManagerS.GetPiece(Id);
         if (piece != null && piece.PlayerControllerId < 0)
         {
             piece.PlayerControllerId = PlayerId;
@@ -119,7 +134,7 @@ public class JigsawPlayerController : NetworkBehaviour
         {
             return;
         }
-        PuzzlePiece piece = puzzleManager.GetPiece(SelectedPieceId);
+        PuzzlePiece piece = PuzzleManagerS.GetPiece(SelectedPieceId);
         if (piece != null && piece.PlayerControllerId == PlayerId)
         {
             piece.PlayerControllerId = -1;
@@ -144,7 +159,7 @@ public class JigsawPlayerController : NetworkBehaviour
         {
             return;
         }
-        PuzzlePiece piece = puzzleManager.GetPiece(SelectedPieceId);
+        PuzzlePiece piece = PuzzleManagerS.GetPiece(SelectedPieceId);
         if (piece != null)
         {
             piece.transform.position = piece.transform.position + new Vector3(WorldDeltaX, 0, WorldDeltaZ);
@@ -167,7 +182,7 @@ public class JigsawPlayerController : NetworkBehaviour
         {
             return;
         }
-        PuzzlePiece piece = puzzleManager.GetPiece(SelectedPieceId);
+        PuzzlePiece piece = PuzzleManagerS.GetPiece(SelectedPieceId);
         if (piece != null && piece.PlayerControllerId == PlayerId)
         {
             RotatePiece(piece, -90.0f);
@@ -182,7 +197,7 @@ public class JigsawPlayerController : NetworkBehaviour
         {
             return;
         }
-        PuzzlePiece piece = puzzleManager.GetPiece(SelectedPieceId);
+        PuzzlePiece piece = PuzzleManagerS.GetPiece(SelectedPieceId);
         if (piece != null && piece.PlayerControllerId == PlayerId)
         {
             RotatePiece(piece, 90.0f);
@@ -268,5 +283,41 @@ public class JigsawPlayerController : NetworkBehaviour
     void HostUpdate()
     {
         // Empty for now
+    }
+
+
+    public void OnRepSelectedPieceId(int NewSelectedPieceId)
+    {
+        if (LastSelectedPieceId >= 0)
+        {
+            PuzzlePiece piece = PuzzleManagerC.GetPiece(LastSelectedPieceId);
+            if (piece != null)
+            {
+                piece.DisableOutline();
+            }
+        }
+        if (NewSelectedPieceId >= 0)
+        {
+            PuzzlePiece piece = PuzzleManagerC.GetPiece(NewSelectedPieceId);
+            if (piece != null)
+            {
+                piece.EnableOutline(PlayerState.UserColor);
+            }
+            else
+            {
+                PuzzleManagerC.RequestPiece(NewSelectedPieceId, PieceRegisteredCallback);
+            }
+        }
+        SelectedPieceId = NewSelectedPieceId;
+        LastSelectedPieceId = NewSelectedPieceId;
+    }
+
+
+    private void PieceRegisteredCallback(PuzzlePiece Piece)
+    {
+        if (SelectedPieceId == Piece.GetId())
+        {
+            Piece.EnableOutline(PlayerState.UserColor);
+        }
     }
 }

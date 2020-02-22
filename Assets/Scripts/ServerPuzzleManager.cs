@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
-public class PuzzleManager : MonoBehaviour
+public class ServerPuzzleManager : MonoBehaviour
 {
     public GameObject PuzzlePiecePrefab;
     public uint GridWidth = 2;
@@ -12,13 +10,12 @@ public class PuzzleManager : MonoBehaviour
     public float PuzzleSpaceGridScale = 1.2f; // Scaling factor applied to (GridWidth, GridHeight) to determine board size
     public float SpawnSpaceGridScale = 1.8f;  // Scaling factor applied to (GridWidth, GridHeight) to determine puzzle piece spawning region
 
-
     private PuzzleMeshRandomizer PuzzleRandomizer;
     private PuzzlePiece[] Pieces;
     private int LastAssignedPlayerId = -1;
 
 
-    void Start()
+    private void Start()
     {
         if (StaticJigsawData.PuzzleWidth >= 2)
         {

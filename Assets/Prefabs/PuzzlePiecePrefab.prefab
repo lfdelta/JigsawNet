@@ -63,6 +63,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: c29b34471ea4e4c8b85462853e35d29e, type: 2}
+  - {fileID: 2100000, guid: d0b50213dabc6449bb82e8b0a5c06f2e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -109,6 +110,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PlayerControllerId: -1
+  UseGravity: 1
 --- !u!114 &6256064609764467689
 MonoBehaviour:
   m_ObjectHideFlags: 0

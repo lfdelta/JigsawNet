@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
 public class PuzzlePiece : NetworkBehaviour
@@ -34,6 +32,7 @@ public class PuzzlePiece : NetworkBehaviour
     private float MatOffsetY;
 
     private Rigidbody Rbody;
+    private Material OutlineMat;
 
 
     // Updates mesh, rotates UV coordinates, and updates world rotation to match
@@ -94,6 +93,19 @@ public class PuzzlePiece : NetworkBehaviour
     }
 
 
+    public void EnableOutline(Color PlayerColor)
+    {
+        OutlineMat.SetColor("_Color", PlayerColor);
+        OutlineMat.SetFloat("_Alpha", 1.0f);
+    }
+
+
+    public void DisableOutline()
+    {
+        OutlineMat.SetFloat("_Alpha", 0.0f);
+    }
+
+
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -103,6 +115,16 @@ public class PuzzlePiece : NetworkBehaviour
         }
         Rbody = GetComponent<Rigidbody>();
         Rbody.useGravity = UseGravity;
+
+        OutlineMat = GetComponent<MeshRenderer>().materials[1];
+
+        StaticJigsawData.ObjectManager.RequestObject("ClientPuzzleManager", ReceiveClientPuzzleManager);
+    }
+
+
+    private void ReceiveClientPuzzleManager(GameObject Manager)
+    {
+        Manager.GetComponent<ClientPuzzleManager>().SetPiece(this, Id);
     }
 
 
