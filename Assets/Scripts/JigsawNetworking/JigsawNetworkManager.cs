@@ -15,11 +15,18 @@ public class JigsawNetworkManager : NetworkManager
 {
     public GameObject GameWorldPrefab;
 
-    private TextureTransfer texTransfer;
+    private TextureTransfer TexTransfer;
     private NetworkWorldState NetWorldState;
+    private UniqueObjectManager ObjectManager;
 
     private Dictionary<int, ClientInfoMsg> DeferredClientInfo;
-    
+
+
+    private void Awake()
+    {
+        ObjectManager = gameObject.AddComponent<UniqueObjectManager>();
+    }
+
 
     public void StartJigsawHost()
     {
@@ -37,14 +44,16 @@ public class JigsawNetworkManager : NetworkManager
         StaticJigsawData.LocalPlayerName = menu.PlayerNameInput.text;
         StaticJigsawData.PuzzleWidth = (uint)menu.PuzzleWidthSlider.value;
         StaticJigsawData.PuzzleHeight = (uint)menu.PuzzleHeightSlider.value;
-        networkPort = 7777;
-        StartHost();
 
         NetworkWorldState oldWorldState = FindObjectOfType<NetworkWorldState>();
         if (oldWorldState)
         {
             Destroy(oldWorldState);
         }
+
+        ObjectManager.ResetState();
+        networkPort = 7777;
+        StartHost();
     }
 
 
@@ -63,17 +72,19 @@ public class JigsawNetworkManager : NetworkManager
             return;
         }
         StaticJigsawData.LocalPlayerName = menu.PlayerNameInput.text;
-        networkAddress = NetworkUtils.HexToIPv4(hostAddr);
-        networkPort = 7777;
-
-        StaticJigsawData.PuzzleTexture = null; // Clear the client's texture to prevent auto-populating the puzzle pieces with their own image
-        StartClient();
+        
 
         NetworkWorldState oldWorldState = FindObjectOfType<NetworkWorldState>();
         if (oldWorldState)
         {
             Destroy(oldWorldState);
         }
+
+        StaticJigsawData.PuzzleTexture = null; // Clear the client's texture to prevent auto-populating the puzzle pieces with their own image
+        ObjectManager.ResetState();
+        networkAddress = NetworkUtils.HexToIPv4(hostAddr);
+        networkPort = 7777;
+        StartClient();
     }
 
 
@@ -83,11 +94,11 @@ public class JigsawNetworkManager : NetworkManager
         Debug.Log("A client connected to the server: " + conn);
         if (conn.hostId != -1)
         {
-            if (!texTransfer)
+            if (!TexTransfer)
             {
-                texTransfer = (TextureTransfer)gameObject.AddComponent(typeof(TextureTransfer));
+                TexTransfer = (TextureTransfer)gameObject.AddComponent(typeof(TextureTransfer));
             }
-            texTransfer.SendTextureToClient(conn.connectionId, 0, StaticJigsawData.PuzzleTexture);
+            TexTransfer.SendTextureToClient(conn.connectionId, 0, StaticJigsawData.PuzzleTexture);
         }
     }
 
@@ -201,7 +212,7 @@ public class JigsawNetworkManager : NetworkManager
         base.OnStartServer();
         Debug.Log("Server has started");
 
-        texTransfer = (TextureTransfer)gameObject.AddComponent(typeof(TextureTransfer));
+        TexTransfer = (TextureTransfer)gameObject.AddComponent(typeof(TextureTransfer));
         NetworkServer.RegisterHandler(JigsawNetworkMsg.ClientInfo, OnServerReceiveClientInfo);
         DeferredClientInfo = new Dictionary<int, ClientInfoMsg>();
     }
@@ -289,21 +300,21 @@ public class JigsawNetworkManager : NetworkManager
 
     public void OnClientTextureMeta(NetworkMessage msg)
     {
-        texTransfer.OnClientReceiveTexMeta(msg);
+        TexTransfer.OnClientReceiveTexMeta(msg);
     }
 
 
     public void OnClientTextureChunk(NetworkMessage msg)
     {
-        texTransfer.OnClientReceiveTexChunk(msg);
+        TexTransfer.OnClientReceiveTexChunk(msg);
     }
 
 
     public override void OnStartClient(NetworkClient client)
     {
-        texTransfer = (TextureTransfer)gameObject.AddComponent(typeof(TextureTransfer));
+        TexTransfer = (TextureTransfer)gameObject.AddComponent(typeof(TextureTransfer));
 
-        texTransfer.SetupClient(client);
+        TexTransfer.SetupClient(client);
         Debug.Log("Client has started");
     }
 

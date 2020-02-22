@@ -7,7 +7,6 @@ public class UniqueObjectManager : MonoBehaviour
     public delegate void RequestResponseDelegate(GameObject RequestedObject);
 
     private Dictionary<string, GameObject> StoredObjects;
-
     private Dictionary<string, List<RequestResponseDelegate>> UnservicedRequests;
 
 
@@ -58,5 +57,12 @@ public class UniqueObjectManager : MonoBehaviour
             requestList.Add(Callback);
             UnservicedRequests.Add(UniqueTag, requestList);
         }
+    }
+
+
+    public void ResetState()
+    {
+        StoredObjects.Clear();
+        UnservicedRequests.Clear();
     }
 }

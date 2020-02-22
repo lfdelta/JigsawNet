@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.Networking.NetworkSystem;
 
 public class TextureTransfer : MonoBehaviour
 {
@@ -16,10 +15,13 @@ public class TextureTransfer : MonoBehaviour
         public TextureFormat Format;
         public int MipCount = 0;
         public byte[] RawBytes;
-        public bool[] ReceivedChunks;
+        public int NumChunksReceived = 0;
+        public int NumChunksExpected = 0;
     };
 
-    Dictionary<short, TextureMetadata> ClientTextureBuffers;
+    private Dictionary<short, TextureMetadata> ClientTextureBuffers;
+
+    private JigsawHUD HUD;
 
 
     public class TextureMetaMsg : MessageBase
@@ -41,6 +43,12 @@ public class TextureTransfer : MonoBehaviour
         public int TotalBytes = 0; // Total texture size across all messages
         public byte[] Bytes;
     };
+
+
+    private void Start()
+    {
+        StaticJigsawData.ObjectManager.RequestObject("JigsawHUD", ReceiveJigsawHUD);
+    }
 
 
     public void SetupClient(NetworkClient Client)
@@ -135,6 +143,12 @@ public class TextureTransfer : MonoBehaviour
     }
 
 
+    private void ReceiveJigsawHUD(GameObject HUDObject)
+    {
+        HUD = HUDObject.GetComponent<JigsawHUD>();
+    }
+
+
     public void OnClientReceiveTexChunk(NetworkMessage Msg)
     {
         TextureChunkMsg chunkMsg = Msg.ReadMessage<TextureChunkMsg>();
@@ -151,11 +165,8 @@ public class TextureTransfer : MonoBehaviour
         if (texData.RawBytes == null)
         {
             texData.RawBytes = new byte[chunkMsg.TotalBytes];
-            texData.ReceivedChunks = new bool[(chunkMsg.TotalBytes + texData.ChunkSz - 1) / texData.ChunkSz];
-            for (int i = 0; i < texData.ReceivedChunks.Length; ++i)
-            {
-                texData.ReceivedChunks[i] = false;
-            }
+            texData.NumChunksReceived = 0;
+            texData.NumChunksExpected = (chunkMsg.TotalBytes + texData.ChunkSz - 1) / texData.ChunkSz;
         }
 
         // Fill in the received bytes
@@ -163,8 +174,13 @@ public class TextureTransfer : MonoBehaviour
         {
             texData.RawBytes[chunkMsg.StartByte + i] = chunkMsg.Bytes[i];
         }
-        texData.ReceivedChunks[chunkMsg.StartByte / texData.ChunkSz] = true;
-        Debug.Log("Client received chunk " + (chunkMsg.StartByte / texData.ChunkSz + 1).ToString() + "/" + (texData.ReceivedChunks.Length).ToString() + " for texture " + chunkMsg.TextureId.ToString());
+        ++texData.NumChunksReceived;
+        Debug.LogFormat("Client received chunk {0}/{1} for texture {2}", texData.NumChunksReceived, texData.NumChunksExpected, chunkMsg.TextureId.ToString());
+
+        if (HUD)
+        {
+            HUD.LoadingProgressed((float)texData.NumChunksReceived / (float)texData.NumChunksExpected);
+        }
         ClientCheckTextureIsComplete(chunkMsg.TextureId);
     }
 
@@ -172,19 +188,14 @@ public class TextureTransfer : MonoBehaviour
     public void ClientCheckTextureIsComplete(short TextureId)
     {
         TextureMetadata texData = ClientTextureBuffers[TextureId];
-        
-        // Verify whether we have metadata and all chunks for this texture
-        if (texData.Width <= 0)
+
+        if (texData.Width <= 0 || texData.NumChunksExpected <= 0)
         {
             return;
         }
-        for (int i = texData.ReceivedChunks.Length - 1; i >= 0; --i)
+        if (texData.NumChunksReceived < texData.NumChunksExpected)
         {
-            if (!texData.ReceivedChunks[i])
-            {
-                // If not, exit and try again when the next chunk is received
-                return;
-            }
+            return;
         }
 
         // If we do have all chunks, deserialize the texture and clear the cached dict pair
@@ -211,6 +222,10 @@ public class TextureTransfer : MonoBehaviour
         foreach (PuzzlePiece p in pieces)
         {
             p.ClientSetPuzzleTexture(StaticJigsawData.PuzzleTexture);
+        }
+        if (HUD)
+        {
+            HUD.LoadingFinished();
         }
     }
 }

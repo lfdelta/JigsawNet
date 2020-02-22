@@ -34,6 +34,7 @@ public class NetworkButtonHandlers : MonoBehaviour
         {
             if (netManager.IsClientConnected())
             {
+                StaticJigsawData.PuzzleTexture = null;
                 netManager.StopClient();
             }
         }

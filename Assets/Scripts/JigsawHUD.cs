@@ -32,9 +32,9 @@ public struct TogglableHUD
 
 public class JigsawHUD : MonoBehaviour
 {
-    public GameObject HostHUD;
-    public GameObject HostHUDHiddenTab;
     public Text HostIPText;
+    public GameObject LoadingScreen;
+    public FormatText LoadingProgress;
 
     public TogglableHUD[] HostOnlyToggles;
     public TogglableHUD[] ClientOnlyToggles;
@@ -43,7 +43,7 @@ public class JigsawHUD : MonoBehaviour
     [HideInInspector] public TogglableHUD[] AvailableToggles;
     
 
-    public void Awake()
+    private void Awake()
     {
         int i = 0; // For copying arrays
 
@@ -61,6 +61,7 @@ public class JigsawHUD : MonoBehaviour
             {
                 h.FullyHide();
             }
+            LoadingScreen.SetActive(false);
         }
         else
         {
@@ -74,6 +75,7 @@ public class JigsawHUD : MonoBehaviour
                 AvailableToggles[i++] = h;
                 h.SetVisible(h.StartOpen);
             }
+            LoadingScreen.SetActive(true);
         }
 
         foreach (TogglableHUD h in SharedToggles)
@@ -81,5 +83,22 @@ public class JigsawHUD : MonoBehaviour
             AvailableToggles[i++] = h;
             h.SetVisible(h.StartOpen);
         }
+    }
+
+
+    private void Start()
+    {
+        StaticJigsawData.ObjectManager.RegisterObject(gameObject, "JigsawHUD");
+    }
+
+
+    public void LoadingProgressed(float FractionComplete)
+    {
+        LoadingProgress.Format(100.0f * FractionComplete);
+    }
+
+    public void LoadingFinished()
+    {
+        LoadingScreen.SetActive(false);
     }
 }
