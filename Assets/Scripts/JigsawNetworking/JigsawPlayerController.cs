@@ -38,9 +38,14 @@ public class JigsawPlayerController : NetworkBehaviour
 
     public override void OnStartLocalPlayer()
     {
-        Debug.Log("Local player started!");
+        StaticJigsawData.ObjectManager.RegisterObject(gameObject, "LocalJigsawPlayer");
+        StaticJigsawData.ObjectManager.RequestObject("JigsawHUD", ReceiveJigsawHUD);
+    }
 
-        HUD = FindObjectOfType<JigsawHUD>();
+
+    private void ReceiveJigsawHUD(GameObject HUDObject)
+    {
+        HUD = HUDObject.GetComponent<JigsawHUD>();
     }
 
 
@@ -60,7 +65,7 @@ public class JigsawPlayerController : NetworkBehaviour
     }
 
 
-    void Update()
+    private void Update()
     {
         if (isLocalPlayer)
         {
@@ -84,7 +89,7 @@ public class JigsawPlayerController : NetworkBehaviour
 
 
     [Command]
-    void CmdDebugRotateAllPieces(float Yaw)
+    private void CmdDebugRotateAllPieces(float Yaw)
     {
         PuzzlePiece[] pieces = (PuzzlePiece[])FindObjectsOfType<PuzzlePiece>();
         foreach(PuzzlePiece p in pieces)
@@ -95,7 +100,7 @@ public class JigsawPlayerController : NetworkBehaviour
 
 
     [Command]
-    void CmdSelectPuzzlePiece(int Id)
+    private void CmdSelectPuzzlePiece(int Id)
     {
         if (SelectedPieceId >= 0)
         {
@@ -111,7 +116,7 @@ public class JigsawPlayerController : NetworkBehaviour
 
 
     [Command]
-    void CmdDeselectPuzzlePiece()
+    private void CmdDeselectPuzzlePiece()
     {
         if (SelectedPieceId < 0)
         {
@@ -127,7 +132,7 @@ public class JigsawPlayerController : NetworkBehaviour
 
 
     [Command]
-    void CmdMouseDrag(float WorldDeltaX, float WorldDeltaZ)
+    private void CmdMouseDrag(float WorldDeltaX, float WorldDeltaZ)
     {
         if (SelectedPieceId < 0)
         {
@@ -141,14 +146,14 @@ public class JigsawPlayerController : NetworkBehaviour
     }
 
 
-    void RotatePiece(PuzzlePiece Piece, float Angle)
+    private void RotatePiece(PuzzlePiece Piece, float Angle)
     {
         Piece.transform.Rotate(Vector3.up, Angle, Space.World);
     }
 
 
     [Command]
-    void CmdRotateLeft()
+    private void CmdRotateLeft()
     {
         if (SelectedPieceId < 0)
         {
@@ -163,7 +168,7 @@ public class JigsawPlayerController : NetworkBehaviour
 
 
     [Command]
-    void CmdRotateRight()
+    private void CmdRotateRight()
     {
         if (SelectedPieceId < 0)
         {
@@ -173,6 +178,19 @@ public class JigsawPlayerController : NetworkBehaviour
         if (piece != null && piece.PlayerControllerId == PlayerId)
         {
             RotatePiece(piece, 90.0f);
+        }
+    }
+
+
+    public void HandleMouseWorldPositionUpdated()
+    {
+        Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Vector3 mouseWorld = mouseRay.origin + ((GlobalJigsawSettings.Get().MouseWorldHeight - mouseRay.origin.y) / mouseRay.direction.y) * mouseRay.direction;
+        Vector3 diff = mouseWorld - LastMouseWorldPosition;
+        LastMouseWorldPosition = mouseWorld;
+        if (LocalPlayerThinksPieceIsSelected)
+        {
+            CmdMouseDrag(diff.x, diff.z);
         }
     }
 
@@ -207,12 +225,8 @@ public class JigsawPlayerController : NetworkBehaviour
             // Handle mouse drag
             if (Input.mousePosition != LastMousePosition)
             {
-                Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-                Vector3 mouseWorld = mouseRay.origin + ((GlobalJigsawSettings.Get().MouseWorldHeight - mouseRay.origin.y) / mouseRay.direction.y) * mouseRay.direction;
-                Vector3 diff = mouseWorld - LastMouseWorldPosition;
+                HandleMouseWorldPositionUpdated();
                 LastMousePosition = Input.mousePosition;
-                LastMouseWorldPosition = mouseWorld;
-                CmdMouseDrag(diff.x, diff.z);
             }
 
             // Handle piece rotation
@@ -253,7 +267,7 @@ public class JigsawPlayerController : NetworkBehaviour
     }
 
 
-    void HostUpdate()
+    private void HostUpdate()
     {
         // Empty for now
     }

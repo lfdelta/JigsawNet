@@ -20,6 +20,8 @@ public class CameraController : MonoBehaviour
     private int PitchInd;
     private float HeightHeldTime;
     private float PanHeldTime;
+
+    private JigsawPlayerController LocalPlayer;
     
 
     void Start()
@@ -32,12 +34,21 @@ public class CameraController : MonoBehaviour
         HeightHeldTime = 0.0f;
         PanHeldTime = 0.0f;
 
+        StaticJigsawData.ObjectManager.RequestObject("LocalJigsawPlayer", ReceiveLocalJigsawPlayer);
+
         // TODO: set starting height based on board dimensions (see BoardScalingHandler)
+    }
+
+
+    private void ReceiveLocalJigsawPlayer(GameObject PlayerObject)
+    {
+        LocalPlayer = PlayerObject.GetComponent<JigsawPlayerController>();
     }
 
 
     void Update()
     {
+        bool cameraMoved = false;
         float moveX = Input.GetAxis("Horizontal");
         float moveZ = Input.GetAxis("Vertical");
         float moveY = Input.GetAxis("Zoom");
@@ -48,6 +59,7 @@ public class CameraController : MonoBehaviour
             float speed = (PanHeldTime >= PanSpeedTransitionTime) ? PanSpeedHeld : PanSpeed;
             moveX *= speed * Time.deltaTime;
             moveZ *= speed * Time.deltaTime;
+            cameraMoved = true;
         }
         else
         {
@@ -58,6 +70,7 @@ public class CameraController : MonoBehaviour
             HeightHeldTime += Time.deltaTime;
             moveY *= (HeightHeldTime >= HeightSpeedTransitionTime) ? HeightSpeedHeld : HeightSpeed;
             moveY *= Time.deltaTime;
+            cameraMoved = true;
         }
         else
         {
@@ -76,6 +89,7 @@ public class CameraController : MonoBehaviour
             {
                 --PitchInd;
                 UpdateCameraPitch();
+                cameraMoved = true;
             }
         }
         else if (Input.GetButtonDown("AngleDown"))
@@ -84,7 +98,13 @@ public class CameraController : MonoBehaviour
             {
                 ++PitchInd;
                 UpdateCameraPitch();
+                cameraMoved = true;
             }
+        }
+
+        if (cameraMoved && LocalPlayer != null)
+        {
+            LocalPlayer.HandleMouseWorldPositionUpdated();
         }
     }
 
