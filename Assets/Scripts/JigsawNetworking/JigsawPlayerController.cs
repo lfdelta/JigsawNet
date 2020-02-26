@@ -12,13 +12,11 @@ public struct JigsawPlayerState
 public class JigsawPlayerController : NetworkBehaviour
 {
     [HideInInspector]
-    [SyncVar]
     public JigsawPlayerState PlayerState;
 
-    [SyncVar(hook = "OnRepSelectedPieceId")]
-    private int SelectedPieceId = -1;
-    private int LastSelectedPieceId = -1;
-
+    private int SelectedPieceId = -1;                      // Only valid on server
+    private bool LocalPlayerThinksPieceIsSelected = false; // Used on clients to reduce network bandwidth
+    
     [SyncVar]
     private int PlayerId = -1;
 
@@ -27,7 +25,6 @@ public class JigsawPlayerController : NetworkBehaviour
     private Vector3 LastMousePosition;
     private Vector3 LastMouseWorldPosition;
 
-    private ClientPuzzleManager PuzzleManagerC;
     private JigsawHUD HUD;
 
 
@@ -36,20 +33,6 @@ public class JigsawPlayerController : NetworkBehaviour
         base.OnStartServer();
         PuzzleManagerS = FindObjectOfType<ServerPuzzleManager>();
         PlayerId = PuzzleManagerS.GetNextPlayerId();
-    }
-
-
-    public override void OnStartClient()
-    {
-        base.OnStartClient();
-        StaticJigsawData.ObjectManager.RequestObject("ClientPuzzleManager", ReceiveClientPuzzleManager);
-    }
-
-
-    private void ReceiveClientPuzzleManager(GameObject Manager)
-    {
-        PuzzleManagerC = Manager.GetComponent<ClientPuzzleManager>();
-        OnRepSelectedPieceId(SelectedPieceId);
     }
 
 
@@ -155,8 +138,6 @@ public class JigsawPlayerController : NetworkBehaviour
         {
             piece.transform.position = piece.transform.position + new Vector3(WorldDeltaX, 0, WorldDeltaZ);
         }
-
-        // TODO: clamp position to defined game board boundary
     }
 
 
@@ -207,9 +188,10 @@ public class JigsawPlayerController : NetworkBehaviour
             if (Physics.Raycast(mouseRay, out hitInfo))
             {
                 PuzzlePiece piece = hitInfo.transform.gameObject.GetComponent<PuzzlePiece>();
-                if (piece != null)
+                if (piece != null && piece.PlayerControllerId < 0)
                 {
                     CmdSelectPuzzlePiece(piece.GetId());
+                    LocalPlayerThinksPieceIsSelected = true;
                     LastMousePosition = Input.mousePosition;
                     LastMouseWorldPosition = mouseRay.origin + ((GlobalJigsawSettings.Get().MouseWorldHeight - mouseRay.origin.y) / mouseRay.direction.y) * mouseRay.direction;
                 }
@@ -218,10 +200,10 @@ public class JigsawPlayerController : NetworkBehaviour
         else if (Input.GetButtonUp("Select"))
         {
             CmdDeselectPuzzlePiece();
+            LocalPlayerThinksPieceIsSelected = false;
         }
-        else if (Input.GetButton("Select") && SelectedPieceId >= 0)
+        else if (Input.GetButton("Select") && LocalPlayerThinksPieceIsSelected)
         {
-            // TODO: test to verify correctness in case of delayed SelectedPieceId syncVar
             // Handle mouse drag
             if (Input.mousePosition != LastMousePosition)
             {
@@ -231,6 +213,7 @@ public class JigsawPlayerController : NetworkBehaviour
                 LastMousePosition = Input.mousePosition;
                 LastMouseWorldPosition = mouseWorld;
                 CmdMouseDrag(diff.x, diff.z);
+                Debug.LogFormat("Updating mouse position -- [{0}, {1}]", LastMousePosition.x, LastMousePosition.y);
             }
 
             // Handle piece rotation
@@ -274,41 +257,5 @@ public class JigsawPlayerController : NetworkBehaviour
     void HostUpdate()
     {
         // Empty for now
-    }
-
-
-    public void OnRepSelectedPieceId(int NewSelectedPieceId)
-    {
-        if (LastSelectedPieceId >= 0)
-        {
-            PuzzlePiece piece = PuzzleManagerC.GetPiece(LastSelectedPieceId);
-            if (piece != null)
-            {
-                piece.DisableOutline();
-            }
-        }
-        if (NewSelectedPieceId >= 0)
-        {
-            PuzzlePiece piece = PuzzleManagerC.GetPiece(NewSelectedPieceId);
-            if (piece != null)
-            {
-                piece.EnableOutline(PlayerState.UserColor);
-            }
-            else
-            {
-                PuzzleManagerC.RequestPiece(NewSelectedPieceId, PieceRegisteredCallback);
-            }
-        }
-        SelectedPieceId = NewSelectedPieceId;
-        LastSelectedPieceId = NewSelectedPieceId;
-    }
-
-
-    private void PieceRegisteredCallback(PuzzlePiece Piece)
-    {
-        if (SelectedPieceId == Piece.GetId())
-        {
-            Piece.EnableOutline(PlayerState.UserColor);
-        }
     }
 }

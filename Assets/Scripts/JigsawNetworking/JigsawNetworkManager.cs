@@ -273,6 +273,7 @@ public class JigsawNetworkManager : NetworkManager
 
     public override void OnClientDisconnect(NetworkConnection conn)
     {
+        StaticJigsawData.PuzzleTexture = null;
         StopClient();
         if (conn.lastError != NetworkError.Ok)
         {

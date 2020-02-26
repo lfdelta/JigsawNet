@@ -146,6 +146,10 @@ public class TextureTransfer : MonoBehaviour
     private void ReceiveJigsawHUD(GameObject HUDObject)
     {
         HUD = HUDObject.GetComponent<JigsawHUD>();
+        if (StaticJigsawData.PuzzleTexture != null)
+        {
+            HUD.LoadingFinished();
+        }
     }
 
 

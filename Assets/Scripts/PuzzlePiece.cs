@@ -4,10 +4,8 @@ using UnityEngine.Networking;
 public class PuzzlePiece : NetworkBehaviour
 {
     [HideInInspector]
-    public int PlayerControllerId = -1; // The owning player, only valid on the server
-
-    [SyncVar(hook = "OnChangeGravity")]
-    private bool UseGravity = true; // TODO: remove this and instead use SyncVar PlayerControllerId as a proxy
+    [SyncVar(hook = "OnChangePlayerController")]
+    public int PlayerControllerId = -1; // The owning player, if any
 
     [SyncVar]
     private int Id = -1; // Index into the server's PuzzleManager array
@@ -32,6 +30,7 @@ public class PuzzlePiece : NetworkBehaviour
 
     private Rigidbody Rbody;
     private Material OutlineMat;
+    private NetworkWorldState NetWorldState;
 
 
     // Updates mesh, rotates UV coordinates, and updates world rotation to match
@@ -78,7 +77,6 @@ public class PuzzlePiece : NetworkBehaviour
         transform.position = pos;
 
         Rbody.useGravity = false;
-        UseGravity = false;
     }
 
 
@@ -93,7 +91,6 @@ public class PuzzlePiece : NetworkBehaviour
         transform.position = pos;
 
         Rbody.useGravity = true;
-        UseGravity = true;
     }
 
 
@@ -129,19 +126,6 @@ public class PuzzlePiece : NetworkBehaviour
     }
 
 
-    public void EnableOutline(Color PlayerColor)
-    {
-        OutlineMat.SetColor("_Color", PlayerColor);
-        OutlineMat.SetFloat("_Alpha", 1.0f);
-    }
-
-
-    public void DisableOutline()
-    {
-        OutlineMat.SetFloat("_Alpha", 0.0f);
-    }
-
-
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -150,17 +134,21 @@ public class PuzzlePiece : NetworkBehaviour
             ClientSetPuzzleTexture(StaticJigsawData.PuzzleTexture);
         }
         Rbody = GetComponent<Rigidbody>();
-        Rbody.useGravity = UseGravity;
+        Rbody.useGravity = (PlayerControllerId < 0);
 
         OutlineMat = GetComponent<MeshRenderer>().materials[1];
 
-        StaticJigsawData.ObjectManager.RequestObject("ClientPuzzleManager", ReceiveClientPuzzleManager);
+        StaticJigsawData.ObjectManager.RequestObject("NetworkWorldState", ReceiveNetworkWorldState);
     }
 
 
-    private void ReceiveClientPuzzleManager(GameObject Manager)
+    private void ReceiveNetworkWorldState(GameObject Object)
     {
-        Manager.GetComponent<ClientPuzzleManager>().SetPiece(this, Id);
+        NetWorldState = Object.GetComponent<NetworkWorldState>();
+        if (PlayerControllerId >= 0)
+        {
+            OnChangePlayerController(PlayerControllerId);
+        }
     }
 
 
@@ -184,19 +172,55 @@ public class PuzzlePiece : NetworkBehaviour
 
     private void Update()
     {
-        GlobalJigsawSettings settings = GlobalJigsawSettings.Get();
-        float newX = Mathf.Clamp(transform.position.x, settings.PuzzleBoardBoundsX.x, settings.PuzzleBoardBoundsX.y);
-        float newY = Mathf.Clamp(transform.position.y, settings.PuzzleBoardBoundsY.x, settings.PuzzleBoardBoundsY.y);
-        float newZ = Mathf.Clamp(transform.position.z, settings.PuzzleBoardBoundsZ.x, settings.PuzzleBoardBoundsZ.y);
-        if (transform.position.x != newX || transform.position.y != newY || transform.position.z != newZ)
+        if (isServer)
         {
-            transform.position = new Vector3(newX, newY, newZ);
+            GlobalJigsawSettings settings = GlobalJigsawSettings.Get();
+            float newX = Mathf.Clamp(transform.position.x, settings.PuzzleBoardBoundsX.x, settings.PuzzleBoardBoundsX.y);
+            float newY = Mathf.Clamp(transform.position.y, settings.PuzzleBoardBoundsY.x, settings.PuzzleBoardBoundsY.y);
+            float newZ = Mathf.Clamp(transform.position.z, settings.PuzzleBoardBoundsZ.x, settings.PuzzleBoardBoundsZ.y);
+            if (transform.position.x != newX || transform.position.y != newY || transform.position.z != newZ)
+            {
+                transform.position = new Vector3(newX, newY, newZ);
+            }
         }
     }
 
 
-    public void OnChangeGravity(bool Gravity)
+    public void OnChangePlayerController(int PlayerId)
     {
-        Rbody.useGravity = Gravity;
+        if (PlayerId >= 0)
+        {
+            Rbody.useGravity = false;
+            if (NetWorldState)
+            {
+                if (NetWorldState.ConnectedPlayers.Count > PlayerId)
+                {
+                    EnableOutline(NetWorldState.ConnectedPlayers[PlayerId].UserColor);
+                }
+                else
+                {
+                    Debug.LogErrorFormat("PuzzlePiece.OnChangePlayerController({0}) found ConnectedPlayers with length {1}", PlayerId, NetWorldState.ConnectedPlayers.Count);
+                }
+            }
+        }
+        else
+        {
+            DisableOutline();
+            Rbody.useGravity = true;
+        }
+        PlayerControllerId = PlayerId;
+    }
+
+
+    private void EnableOutline(Color PlayerColor)
+    {
+        OutlineMat.SetColor("_Color", PlayerColor);
+        OutlineMat.SetFloat("_Alpha", 1.0f);
+    }
+
+
+    private void DisableOutline()
+    {
+        OutlineMat.SetFloat("_Alpha", 0.0f);
     }
 }
