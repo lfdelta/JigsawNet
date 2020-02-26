@@ -213,7 +213,6 @@ public class JigsawPlayerController : NetworkBehaviour
                 LastMousePosition = Input.mousePosition;
                 LastMouseWorldPosition = mouseWorld;
                 CmdMouseDrag(diff.x, diff.z);
-                Debug.LogFormat("Updating mouse position -- [{0}, {1}]", LastMousePosition.x, LastMousePosition.y);
             }
 
             // Handle piece rotation
