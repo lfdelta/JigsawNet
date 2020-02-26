@@ -6,9 +6,8 @@ public class PuzzlePiece : NetworkBehaviour
     [HideInInspector]
     public int PlayerControllerId = -1; // The owning player, only valid on the server
 
-    [HideInInspector]
     [SyncVar(hook = "OnChangeGravity")]
-    public bool UseGravity = true;
+    private bool UseGravity = true; // TODO: remove this and instead use SyncVar PlayerControllerId as a proxy
 
     [SyncVar]
     private int Id = -1; // Index into the server's PuzzleManager array
@@ -58,6 +57,43 @@ public class PuzzlePiece : NetworkBehaviour
         {
             Debug.LogErrorFormat("PuzzlePiece assigned a negative Id %d", Id);
         }
+    }
+
+
+    public void SelectedBy(int PlayerId)
+    {
+        PlayerControllerId = PlayerId;
+
+        // Round yaw to the nearest 90 degrees
+        float yaw = transform.eulerAngles.y;
+        float finalYaw = Mathf.Round(yaw / 90.0f) * 90.0f;
+        if (yaw != finalYaw)
+        {
+            transform.Rotate(Vector3.up, finalYaw - yaw, Space.World);
+        }
+
+        // Set the height appropriately
+        Vector3 pos = transform.position;
+        pos.y = GlobalJigsawSettings.Get().PuzzlePieceSelectedHeight;
+        transform.position = pos;
+
+        Rbody.useGravity = false;
+        UseGravity = false;
+    }
+
+
+    public void Deselected()
+    {
+        PlayerControllerId = -1;
+
+        // Snap to XZ grid
+        Vector3 pos = transform.position;
+        pos.x = Mathf.Round(pos.x);
+        pos.z = Mathf.Round(pos.z);
+        transform.position = pos;
+
+        Rbody.useGravity = true;
+        UseGravity = true;
     }
 
 

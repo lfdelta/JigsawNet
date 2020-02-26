@@ -113,6 +113,7 @@ public class JigsawNetworkManager : NetworkManager
                 JigsawPlayerController jigsawController = player.gameObject.GetComponent<JigsawPlayerController>();
                 if (jigsawController)
                 {
+                    jigsawController.CleanupPlayer();
                     NetWorldState.DeregisterPlayer(jigsawController.PlayerState);
                 }
             }

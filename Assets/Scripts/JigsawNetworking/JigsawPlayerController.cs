@@ -61,6 +61,22 @@ public class JigsawPlayerController : NetworkBehaviour
     }
 
 
+    // Should be called on the server when this player disconnects
+    public void CleanupPlayer()
+    {
+        // Deselect any selected puzzle pieces
+        if (SelectedPieceId >= 0)
+        {
+            PuzzlePiece piece = PuzzleManagerS.GetPiece(SelectedPieceId);
+            if (piece != null && piece.PlayerControllerId == PlayerId)
+            {
+                piece.Deselected();
+            }
+            SelectedPieceId = -1;
+        }
+    }
+
+
     void Update()
     {
         if (isLocalPlayer)
@@ -105,24 +121,8 @@ public class JigsawPlayerController : NetworkBehaviour
         PuzzlePiece piece = PuzzleManagerS.GetPiece(Id);
         if (piece != null && piece.PlayerControllerId < 0)
         {
-            piece.PlayerControllerId = PlayerId;
+            piece.SelectedBy(PlayerId);
             SelectedPieceId = Id;
-
-            // Round yaw to the nearest 90 degrees
-            float yaw = piece.transform.eulerAngles.y;
-            float finalYaw = Mathf.Round(yaw / 90.0f) * 90.0f;
-            if (yaw != finalYaw)
-            {
-                piece.transform.Rotate(Vector3.up, finalYaw - yaw, Space.World);
-            }
-
-            // Set the height appropriately
-            Vector3 pos = piece.transform.position;
-            pos.y = GlobalJigsawSettings.Get().PuzzlePieceSelectedHeight;
-            piece.transform.position = pos;
-
-            piece.GetComponent<Rigidbody>().useGravity = false;
-            piece.UseGravity = false;
         }
     }
 
@@ -137,16 +137,7 @@ public class JigsawPlayerController : NetworkBehaviour
         PuzzlePiece piece = PuzzleManagerS.GetPiece(SelectedPieceId);
         if (piece != null && piece.PlayerControllerId == PlayerId)
         {
-            piece.PlayerControllerId = -1;
-
-            // Snap to XZ grid
-            Vector3 pos = piece.transform.position;
-            pos.x = Mathf.Round(pos.x);
-            pos.z = Mathf.Round(pos.z);
-            piece.transform.position = pos;
-
-            piece.GetComponent<Rigidbody>().useGravity = true;
-            piece.UseGravity = true;
+            piece.Deselected();
         }
         SelectedPieceId = -1;
     }
